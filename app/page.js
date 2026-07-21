@@ -73,7 +73,7 @@ const STATS = [
 const FAQS = [
   {
     q: "როგორ დავჯავშნო ტური?",
-    a: "აირჩიეთ სასურველი ტური და დააჭირეთ ღილაკს „დაჯავშნე“ — ავტომატურად გადახვალთ WhatsApp-ზე, სადაც ჩვენი კონსიერჟი 30 წუთში გიპასუხებთ. ასევე შეგიძლიათ შეავსოთ ჯავშნის ფორმა საიტზე.",
+    a: "აირჩიეთ სასურველი ტური და დააჭირეთ ღილაკს „დაჯავშნეთ“ — ავტომატურად გადახვალთ WhatsApp-ზე, სადაც ჩვენი კონსულტანტი 30 წუთში გიპასუხებთ. ასევე შეგიძლიათ საიტზე შეავსოთ დაჯავშნის ფორმა.",
   },
   {
     q: "შესაძლებელია თუ არა ინდივიდუალური მარშრუტის შედგენა?",
@@ -145,7 +145,7 @@ const CATEGORIES = [
   {
     icon: "✈️",
     title: "ტურები საზღვარგარეთ",
-    desc: "ევროპა, აზია, ხმელ��აშუა ზღვა — სრული ორგანიზებით და ექსკლუზიური პირობებით.",
+    desc: "ევროპა, აზია, ხმელთაშუა ზღვა — სრული ორგანიზებითა და ექსკლუზიური პირობებით.",
   },
   {
     icon: "💎",
@@ -210,9 +210,9 @@ const TOURS = [
   },
   {
     img: IMAGES.batumi,
-    badge: "ზღვა & დასვენება",
+    badge: "ზღვა და დასვენება",
     price: "₾200-დან",
-    title: "ბ��თუმის სანაპირო",
+    title: "ბათუმის სანაპირო",
     desc: "შავი ზღვის სანაპირო, ულამაზესი ბულვარი, ბოტანიკური ბაღი და აჭარული ხაჭაპურის მასტერკლასი.",
     duration: "2 დღე",
     people: "2-8 კაცი",
@@ -249,7 +249,7 @@ const TOURS = [
     badge: "VIP ექსკლუზივი",
     price: "₾800-დან",
     title: "VIP ფუფუნების ვილები",
-    desc: "ექსკლუზიური დასვენება საქართველოს საუკეთესო კურორტებზე, პერსონალური მზარეულითა და კონსიერჟით.",
+    desc: "ექსკლუზიური დასვენება საქართველოს საუკეთესო კურორტებზე, პერსონალური მზარეულითა და პირადი ასისტენტით.",
     duration: "3-7 დღე",
     people: "2-4 კაცი",
   },
@@ -276,9 +276,9 @@ const TOURS = [
 const REVIEWS = [
   [
     {
-      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური იყო უმაღლესი დონის. ნამდვილი ფუ����ნება საქართველოში!",
+      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური უმაღლესი დონის იყო. ნამდვილი ფუფუნება საქართველოში!",
       author: "ალი ალ-ფარაჯი",
-      from: "დუბაი, არაბთა გაერთიანებული საამ��როები",
+      from: "დუბაი, არაბთა გაერთიანებული საამიროები",
       avatar: "A",
     },
     {
@@ -439,7 +439,7 @@ const WEATHER_DATA = {
     name: "გუდაური",
     temp: "15°C",
     condition: "მზიანი",
-    desc: "��შვენიერი ამინდია პარაპლანით ფრენისთვის და ალპური ხედებით ტკბობისთვის.",
+    desc: "შესანიშნავი ამინდია პარაპლანით ფრენისა და ალპური ხედებით ტკბობისთვის.",
     humidity: "40%",
     wind: "22 კმ/სთ",
     uv: "ძალიან მაღალი (8)",
@@ -749,7 +749,7 @@ export default function Home() {
             </div>
           </div>
           <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-            {ICONS.wa} WhatsApp კონსიერჟი
+            {ICONS.wa} WhatsApp-ზე მოგვწერეთ
           </a>
         </div>
       </nav>
@@ -771,12 +771,12 @@ export default function Home() {
           </div>
           
           <h1 className="hero-title">
-            აღმოაჩინე<br/>
+            აღმოაჩინეთ<br/>
             <em>საქართველო</em>
           </h1>
 
           <p className="hero-sub">
-            კავკასიონის მთებიდან შავი ზღვის სანაპიროებამდე — შექმენი შენი 
+            კავკასიონის მთებიდან შავი ზღვის სანაპირომდე — შექმენით თქვენი
             დაუვიწყარი მოგზაურობა ჩვენთან ერთად.
           </p>
 
@@ -795,11 +795,11 @@ export default function Home() {
           <div className="hero-buttons">
             <a href="#booking" className="btn-primary">
               {ICONS.plane}
-              <span>დაგეგმე მოგზაურობა</span>
+              <span>დაგეგმეთ მოგზაურობა</span>
             </a>
             <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
               {ICONS.wa}
-              <span>WhatsApp კონსიერჟი</span>
+              <span>WhatsApp-ზე მოგვწერეთ</span>
             </a>
           </div>
         </div>
@@ -859,7 +859,7 @@ export default function Home() {
                 <div className="category-icon">{cat.icon}</div>
                 <h3 className="category-title">{cat.title}</h3>
                 <p className="category-desc">{cat.desc}</p>
-                <span className="category-cta">დაჯავშნე {ICONS.arrow}</span>
+                <span className="category-cta">დაჯავშნეთ {ICONS.arrow}</span>
                 <div className="category-glow"></div>
               </div>
             ))}
@@ -904,7 +904,7 @@ export default function Home() {
                   <p className="batumi-cin-desc">{tour.desc}</p>
                   <div className="batumi-cin-footer">
                     <span className="batumi-cin-price">{tour.price}</span>
-                    <span className="batumi-cin-cta">დაჯავშნე {ICONS.arrow}</span>
+                    <span className="batumi-cin-cta">დაჯავშნეთ {ICONS.arrow}</span>
                   </div>
                 </div>
               </article>
@@ -975,7 +975,7 @@ export default function Home() {
                   <div className="tour-card-footer">
                     <div className="tour-rating">★★★★★</div>
                     <button className="btn-book" onClick={() => handleBookNow(tour.title, tour.price)}>
-                      დაჯავშნე {ICONS.arrow}
+                      დაჯავშნეთ {ICONS.arrow}
                     </button>
                   </div>
                 </div>
@@ -1049,7 +1049,7 @@ export default function Home() {
                 },
                 {
                   img: "https://images.unsplash.com/photo-1555992336-03a23c7b20ee?w=800&q=80",
-                  city: "სანტორი��ი",
+                  city: "სანტორინი",
                   country: "საბერძნეთი",
                   tag: "დასვენება",
                   price: "₾1,400-დან",
@@ -1079,7 +1079,7 @@ export default function Home() {
                     <p className="intl-card-desc">{dest.desc}</p>
                     <div className="intl-card-footer">
                       <span className="intl-card-country">📍 {dest.country}</span>
-                      <span className="intl-card-cta">დაჯავშნე {ICONS.arrow}</span>
+                      <span className="intl-card-cta">დაჯავშნეთ {ICONS.arrow}</span>
                     </div>
                   </div>
                 </article>
@@ -1280,7 +1280,7 @@ export default function Home() {
                   { id: "GE-RL", name: "რაჭა-ლეჩხუმი", desc: "მთიანი სილამაზე", color: "#106da4" },
                   { id: "GE-SJ", name: "სამცხე-ჯავახეთი", desc: "ვარძია, ბორჯომი", color: "#29b2b7" },
                   { id: "GE-SK", name: "შიდა ქართლი", desc: "გორი, ქართული ვაკე", color: "#fab418" },
-                  { id: "GE-SZ", name: "სამეგრელო-ზემო სვანეთ��", desc: "მესტია, სვანური კოშკები", color: "#106da4" },
+                  { id: "GE-SZ", name: "სამეგრელო-ზემო სვანეთი", desc: "მესტია, სვანური კოშკები", color: "#106da4" },
                   { id: "GE-TB", name: "თბილისი", desc: "საქართველოს დედაქალაქი", color: "#fab418" },
                 ].map((region) => (
                   <path
@@ -1300,7 +1300,7 @@ export default function Home() {
                 const regions = [
                   { id: "GE-AB", name: "აფხაზეთი", desc: "მდინარე ენგურიდან შავ ზღვამდე" },
                   { id: "GE-AJ", name: "აჭარა", desc: "ბათუმი, შავი ზღვა, მთები" },
-                  { id: "GE-GU", name: "გურია", desc: "მწვ���ნე მიდამოები დასავლეთ საქართველოში" },
+                  { id: "GE-GU", name: "გურია", desc: "მწვანე მხარე დასავლეთ საქართველოში" },
                   { id: "GE-IM", name: "იმერეთი", desc: "ქუთაისი, ისტორიული ცენტრი" },
                   { id: "GE-KA", name: "კახეთი", desc: "ქართული ღვინის სამეფო" },
                   { id: "GE-KK", name: "ქვემო ქართლი", desc: "მრავალფეროვანი კულტურა" },
@@ -1402,8 +1402,8 @@ export default function Home() {
         <div className="section-inner">
           <div className="section-header">
             <span className="section-eyebrow">ხშირად დასმული კითხვები</span>
-            <h2 className="section-title">გაქვს კითხვა? გვაქვს პასუხი</h2>
-            <p className="section-desc">ყველაფერი, რაც უნდა იცოდე მოგზაურობის დაგეგმვამდე</p>
+            <h2 className="section-title">გაქვთ კითხვა? ჩვენ გვაქვს პასუხი</h2>
+            <p className="section-desc">ყველაფერი, რაც მოგზაურობის დაგეგმვამდე უნდა იცოდეთ</p>
             <div className="gold-line"></div>
           </div>
           <div className="faq-list">
@@ -1438,8 +1438,8 @@ export default function Home() {
             <div className="booking-info">
               <div className="section-header">
                 <span className="section-eyebrow">მოგზაურობის დაჯავშნა</span>
-                <h2 className="section-title">დაიწყე შენი ოცნების ტური</h2>
-                <p className="section-desc">შეავსე ფორმა და ჩვენი კონსიერჟი დაგიკავშირდება WhatsApp-ით 30 წუთში.</p>
+                <h2 className="section-title">დაიწყეთ თქვენი საოცნებო მოგზაურობა</h2>
+                <p className="section-desc">შეავსეთ ფორმა და ჩვენი კონსულტანტი 30 წუთში WhatsApp-ის საშუალებით დაგიკავშირდებათ.</p>
                 <div className="gold-line"></div>
               </div>
               <div className="booking-highlights">
@@ -1451,8 +1451,8 @@ export default function Home() {
               </div>
             </div>
             <div className="booking-form-wrap">
-              <h3 className="form-title">გაგზავნე მოთხოვნა</h3>
-              <p className="form-subtitle">შეგიბრუნდებით WhatsApp-ით 30 წუთში ✓</p>
+              <h3 className="form-title">გაგზავნეთ მოთხოვნა</h3>
+              <p className="form-subtitle">WhatsApp-ის საშუალებით 30 წუთში დაგიკავშირდებით</p>
               <form onSubmit={handleFormSubmit}>
                 <div className="form-grid">
                   <div className="form-row">
@@ -1632,7 +1632,7 @@ export default function Home() {
 
       {/* ==================== FLOATING WHATSAPP BUTTON ==================== */}
       <div className="floating-wa">
-        <span className="floating-wa-tooltip">მოგვწერე WhatsApp-ზე!</span>
+        <span className="floating-wa-tooltip">მოგვწერეთ WhatsApp-ზე</span>
         <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="floating-wa-btn">
           {ICONS.wa}
         </a>
