@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import useSWR from "swr";
 import { MAP_PATHS } from "./mapPaths";
+
+const fetcher = (url) => fetch(url).then((r) => r.json());
 
 // ============================================================
 // CONFIG & STATIC DATA
@@ -35,32 +38,17 @@ const HERO_SLIDES = [
   { image: "/batumi.png", label: "Batumi, Georgia" }
 ];
 
-// Beautiful Logo component matching the user upload design & colors
-const BrandLogo = ({ width = 48, height = 48 }) => (
-  <svg width={width} height={height} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Blue Wing */}
-    <path 
-      d="M26.5 28C24.5 27 25 22.5 35 18.5C49.5 12.5 67 11.5 71.5 12.5C72.5 13 72.5 14.5 70 18.5C64.5 27 52.5 32 41.5 32C33.5 32 29.5 29.5 26.5 28Z" 
-      fill="#106da4" 
-    />
-    {/* Teal Wing */}
-    <path 
-      d="M53.5 60.5C53.5 61.5 52 61.5 52 50.5C52.5 38.5 59.5 24 71 13.5C72 12.5 72.5 13 71.5 15.5C66.5 27 61 40 57.5 51C55.5 57 53.5 59.5 53.5 60.5Z" 
-      fill="#29b2b7" 
-    />
-    {/* Orange Pointer */}
-    <path 
-      d="M38.5 37.5L52 32.5C50 37 49.5 45.5 49.5 48.5C49.5 49 49 49 48.5 48.5L38.5 37.5Z" 
-      fill="#fab418" 
-    />
-    {/* White Airplane */}
-    <g transform="translate(62, 12) rotate(45) scale(0.6)">
-      <path 
-        d="M21 16L5 21L8.5 16L3.5 14.5L6.5 13L5 10L7 9.5L9.5 11.5L16 9L11.5 3L14.5 1.5L21 6.5L25 5L26 6L21 16Z" 
-        fill="#ffffff" 
-      />
-    </g>
-  </svg>
+// Brand logo — uses the uploaded logo.png asset
+const BrandLogo = ({ width = 48, height = 48, priority = false }) => (
+  <Image
+    src="/logo.png"
+    alt="GeorgiaTrips ლოგო"
+    width={width}
+    height={height}
+    priority={priority}
+    className="brand-logo-img"
+    style={{ width, height, objectFit: "contain" }}
+  />
 );
 
 const STATS = [
@@ -276,7 +264,7 @@ const TOURS = [
 const REVIEWS = [
   [
     {
-      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური უმაღლესი დონის იყო. ნამდვილი ფუფუნება საქართველოში!",
+      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური უმაღლესი დონის ი��ო. ნამდვილი ფუფუნება საქართველოში!",
       author: "ალი ალ-ფარაჯი",
       from: "დუბაი, არაბთა გაერთიანებული საამიროები",
       avatar: "A",
@@ -527,6 +515,14 @@ export default function Home() {
   const [activeWeatherTab, setActiveWeatherTab] = useState("tbilisi");
   const [openFaq, setOpenFaq] = useState(0);
 
+  // Live weather — refreshes every 15 min, falls back to static data
+  const { data: weatherResp, isLoading: weatherLoading } = useSWR("/api/weather", fetcher, {
+    refreshInterval: 900000,
+    revalidateOnFocus: false,
+  });
+  const weatherData = weatherResp?.data || WEATHER_DATA;
+  const isLiveWeather = Boolean(weatherResp?.data);
+
   const [formData, setFormData] = useState({
     name: "",
     country: "",
@@ -612,7 +608,7 @@ export default function Home() {
       <nav className={`nav ${navScrolled ? "scrolled" : ""}`}>
         {/* Logo */}
         <a href="#home" className="nav-logo" aria-label="GeorgiaTrips — მთავარი">
-          <BrandLogo />
+          <BrandLogo priority />
           <span className="nav-wordmark">
             <span className="nav-wordmark-georgia">Georgia</span>
             <span className="nav-wordmark-trips">Trips</span>
@@ -824,7 +820,6 @@ export default function Home() {
 
         <div className="hero-scroll-hint">
           <span>გადაახვიე</span>
-          <div className="scroll-arrow"></div>
         </div>
       </section>
 
@@ -1551,25 +1546,33 @@ export default function Home() {
             <h2 className="section-title">ამინდის პროგნოზი</h2>
             <p className="section-desc">შეიტყვეთ მიმდინარე ამინდი და პროგნოზი საქართველოს მთავარ ტურისტულ მიმართულებებში</p>
             <div className="gold-line"></div>
+            <div className={`weather-live-badge ${isLiveWeather ? "on" : ""}`}>
+              <span className="weather-live-dot" aria-hidden="true"></span>
+              {weatherLoading
+                ? "ცოცხალი მონაცემების ჩატვირთვა..."
+                : isLiveWeather
+                ? "ცოცხალი მონაცემები — Open-Meteo"
+                : "მიახლოებითი მონაცემები"}
+            </div>
           </div>
           
           <div className="weather-wrap">
             {/* Location selector tabs */}
             <div className="weather-tabs">
-              {Object.keys(WEATHER_DATA).map((key) => (
+              {Object.keys(weatherData).map((key) => (
                 <button
                   key={key}
                   className={`weather-tab-btn ${activeWeatherTab === key ? "active" : ""}`}
                   onClick={() => setActiveWeatherTab(key)}
                 >
-                  {WEATHER_DATA[key].name}
+                  {weatherData[key].name}
                 </button>
               ))}
             </div>
 
             {/* Weather Dashboard Card */}
             {(() => {
-              const current = WEATHER_DATA[activeWeatherTab];
+              const current = weatherData[activeWeatherTab];
               return (
                 <div className="weather-dashboard">
                   <div className="weather-main-card">
