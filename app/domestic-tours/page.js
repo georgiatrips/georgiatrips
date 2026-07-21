@@ -5,170 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import BookingModal from "../components/BookingModal";
-
-// ============================================================
-// DOMESTIC TOURS DATA
-// type: "individual" | "group"   /   days: number (1 = one-day)
-// ============================================================
-const DOMESTIC_TOURS = [
-  {
-    id: "tbilisi-city",
-    img: "/tbilisi.png",
-    title: "თბილისის ქალაქური ტური",
-    region: "თბილისი",
-    desc: "მეტეხიდან ნარიყალამდე — ისტორია, ძველი ქალაქის აბანოები, ქართული სამზარეულო და ულამაზესი ხედები.",
-    price: 150,
-    days: 1,
-    type: "group",
-    people: "2-12 კაცი",
-    rating: 4.9,
-    highlights: ["ნარიყალას ციხე", "აბანოთუბანი", "მშრალი ხიდის ბაზრობა"],
-  },
-  {
-    id: "kazbegi-mountains",
-    img: "/hero.png",
-    title: "ყაზბეგის მთები & გერგეთი",
-    region: "ყაზბეგი",
-    desc: "გერგეთის სამება, ულამაზესი ხედი მყინვარწვერზე, დაუვიწყარი ხეობები და ავთენტური მთის ხინკალი.",
-    price: 170,
-    days: 1,
-    type: "group",
-    people: "2-15 კაცი",
-    rating: 5.0,
-    highlights: ["გერგეთის სამება", "ჟინვალის წყალსაცავი", "ანანურის ციხე"],
-  },
-  {
-    id: "kakheti-wine",
-    img: "/kakheti.png",
-    title: "კახეთის ღვინის ტური",
-    region: "კახეთი",
-    desc: "სიღნაღი, ბოდბის მონასტერი, ტრადიციული ქვევრის ღვინის დეგუსტაცია და ქართული სუფრა კახურ მარანში.",
-    price: 180,
-    days: 1,
-    type: "group",
-    people: "2-10 კაცი",
-    rating: 4.8,
-    highlights: ["სიღნაღი", "ბოდბის მონასტერი", "ღვინის დეგუსტაცია"],
-  },
-  {
-    id: "mtskheta-half",
-    img: "/tbilisi.png",
-    title: "მცხეთა — ძველი დედაქალაქი",
-    region: "მცხეთა",
-    desc: "ჯვრის მონასტერი, სვეტიცხოვლის საკათედრო ტაძარი და ორი მდინარის შესართავის პანორამა.",
-    price: 90,
-    days: 1,
-    type: "individual",
-    people: "1-4 კაცი",
-    rating: 4.7,
-    highlights: ["ჯვრის მონასტერი", "სვეტიცხოველი", "შიომღვიმე"],
-  },
-  {
-    id: "batumi-coast",
-    img: "/batumi.png",
-    title: "ბათუმის სანაპირო & ბულვარი",
-    region: "ბათუმი / აჭარა",
-    desc: "შავი ზღვის სანაპირო, ულამაზესი ბულვარი, ბოტანიკური ბაღი და აჭარული ხაჭაპურის მასტერკლასი.",
-    price: 200,
-    days: 2,
-    type: "group",
-    people: "2-8 კაცი",
-    rating: 4.9,
-    highlights: ["ბულვარი", "ბოტანიკური ბაღი", "ალფავიტის კოშკი"],
-  },
-  {
-    id: "svaneti-adventure",
-    img: "/mestia.png",
-    title: "მესტიის თავგადასავალი",
-    region: "სვანეთი",
-    desc: "სვანური კოშკები, უშგული — ევროპაში ყველაზე მაღალი დასახლება, უნიკალური კულტურა და მთის მწვერვალები.",
-    price: 350,
-    days: 3,
-    type: "group",
-    people: "2-6 კაცი",
-    rating: 5.0,
-    highlights: ["სვანური კოშკები", "უშგული", "ჭალაადის მყინვარი"],
-  },
-  {
-    id: "gudauri-ski",
-    img: "/gudauri.png",
-    title: "გუდაური — ალპური თავგადასავალი",
-    region: "გუდაური",
-    desc: "თხილამურები, პარაპლანით ფრენა და ალპური პანორამა კავკასიონის მთებზე, სრული კომფორტით.",
-    price: 240,
-    days: 2,
-    type: "individual",
-    people: "1-4 კაცი",
-    rating: 4.8,
-    highlights: ["საბაგირო", "პარაპლანი", "ყაზბეგის ხედი"],
-  },
-  {
-    id: "adjara-mountains",
-    img: "/villa.png",
-    title: "მთიანი აჭარა — ხულო & გოდერძი",
-    region: "აჭარა",
-    desc: "აღმოაჩინეთ მაღალმთიანი აჭარის საოცრებები — საბაგირო ხულოში, მწვანე ტბა და გოდერძის უღელტეხილი.",
-    price: 120,
-    days: 1,
-    type: "group",
-    people: "2-10 კაცი",
-    rating: 4.7,
-    highlights: ["ხულოს საბაგირო", "მწვანე ტბა", "გოდერძი"],
-  },
-  {
-    id: "borjomi-nature",
-    img: "/kakheti.png",
-    title: "ბორჯომი & ბაკურიანი",
-    region: "სამცხე-ჯავახეთი",
-    desc: "ცნობილი მინერალური წყლის პარკი, რომანოვების სასახლე და მწვანე ტყეები ბაკურიანში.",
-    price: 110,
-    days: 1,
-    type: "group",
-    people: "2-12 კაცი",
-    rating: 4.6,
-    highlights: ["ცენტრალური პარკი", "მინერალური წყალი", "ბაკურიანი"],
-  },
-  {
-    id: "vip-private",
-    img: "/villa.png",
-    title: "VIP ინდივიდუალური ტური",
-    region: "მთელი საქართველო",
-    desc: "სრულად პერსონალიზებული მარშრუტი პირადი გიდით, პრემიუმ ავტომობილითა და ექსკლუზიური სერვისით.",
-    price: 800,
-    days: 5,
-    type: "individual",
-    people: "1-4 კაცი",
-    rating: 5.0,
-    highlights: ["პირადი გიდი", "პრემიუმ ტრანსპორტი", "მოქნილი გრაფიკი"],
-  },
-  {
-    id: "racha-lechkhumi",
-    img: "/mestia.png",
-    title: "რაჭის ხეობები",
-    region: "რაჭა",
-    desc: "შაორის წყალსაცავი, ნიკორწმინდის ტაძარი, ულამაზესი ხეობები და ავთენტური რაჭული სამზარეულო.",
-    price: 280,
-    days: 2,
-    type: "individual",
-    people: "1-5 კაცი",
-    rating: 4.8,
-    highlights: ["შაორი", "ნიკორწმინდა", "ბარაკონი"],
-  },
-  {
-    id: "family-package",
-    img: "/hero.png",
-    title: "საოჯახო პაკეტი",
-    region: "მრავალი რეგიონი",
-    desc: "სპეციალურად დაგეგმილი მშვიდი მარშრუტები ბავშვებთან ერთად, კომფორტული მგზავრობითა და დასვენებით.",
-    price: 450,
-    days: 5,
-    type: "group",
-    people: "4-8 კაცი",
-    rating: 4.9,
-    highlights: ["ბავშვებზე მორგებული", "დასვენება", "აქტივობები"],
-  },
-];
+import { DOMESTIC_TOURS } from "../lib/tours-data";
 
 const TYPE_TABS = [
   { key: "all", label: "ყველა ტიპი" },
@@ -278,7 +115,6 @@ export default function DomesticToursPage() {
   const [type, setType] = useState("all");
   const [duration, setDuration] = useState("all");
   const [sort, setSort] = useState("recommended");
-  const [bookingTour, setBookingTour] = useState(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -429,13 +265,14 @@ export default function DomesticToursPage() {
                     </ul>
                     <div className="dt-card-footer">
                       <StarRating value={tour.rating} />
-                      <button
+                      <Link
                         className="dt-book-btn"
-                        onClick={() => setBookingTour(tour)}
+                        href={`/domestic-tours/${tour.id}`}
+                        aria-label={`${tour.title} — დეტალურად და დაჯავშნა`}
                       >
                         დაჯავშნა
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </article>
@@ -465,7 +302,7 @@ export default function DomesticToursPage() {
           <div className="dt-why-grid">
             {[
               { icon: "🏔️", title: "ადგილობრივი გიდები", desc: "პროფესიონალი გიდები, რომლებიც შენს ენაზე საუბრობენ და საქართველოს ისტორიას იცნობენ." },
-              { icon: "🚐", title: "კომფორტული ტრანსპორტი", desc: "თანამედროვე, კონდიცირებული ავტომობილები ყველა მარშრუტისთვის, უსაფრთხოების უმაღლესი დონით." },
+              { icon: "🚐", title: "კო���ფორტული ტრანსპორტი", desc: "თანამედროვე, კონდიცირებული ავტომობილები ყველა მარშრუტისთვის, უსაფრთხოების უმაღლესი დონით." },
               { icon: "💰", title: "საუკეთესო ფასები", desc: "გამჭვირვალე ფასები დამალული გადასახადების გარეშე და შესანიშნავი შეთავაზებები." },
               { icon: "🔒", title: "უსაფრთხო მოგზაურობა", desc: "ყველა ტური მოიცავს დაზღვევასა და სწრაფ დახმარებას საჭიროების შემთხვევაში." },
             ].map((item) => (
@@ -480,10 +317,6 @@ export default function DomesticToursPage() {
       </section>
 
       <Footer />
-
-      {bookingTour && (
-        <BookingModal tour={bookingTour} onClose={() => setBookingTour(null)} />
-      )}
     </>
   );
 }
