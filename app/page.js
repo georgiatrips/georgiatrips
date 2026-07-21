@@ -145,7 +145,7 @@ const CATEGORIES = [
   {
     icon: "✈️",
     title: "ტურები საზღვარგარეთ",
-    desc: "ევროპა, აზია, ხმელთაშუა ზღვა — სრული ორგანიზებით და ექსკლუზიური პირობებით.",
+    desc: "ევროპა, აზია, ხმელ��აშუა ზღვა — სრული ორგანიზებით და ექსკლუზიური პირობებით.",
   },
   {
     icon: "💎",
@@ -276,9 +276,9 @@ const TOURS = [
 const REVIEWS = [
   [
     {
-      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური იყო უმაღლესი დონის. ნამდვილი ფუფ��ნება საქართველოში!",
+      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური იყო უმაღლესი დონის. ნამდვილი ფუ����ნება საქართველოში!",
       author: "ალი ალ-ფარაჯი",
-      from: "დუბაი, არაბთა გაერთიანებული საამიროები",
+      from: "დუბაი, არაბთა გაერთიანებული საამ��როები",
       avatar: "A",
     },
     {
@@ -439,7 +439,7 @@ const WEATHER_DATA = {
     name: "გუდაური",
     temp: "15°C",
     condition: "მზიანი",
-    desc: "მშვენიერი ამინდია პარაპლანით ფრენისთვის და ალპური ხედებით ტკბობისთვის.",
+    desc: "��შვენიერი ამინდია პარაპლანით ფრენისთვის და ალპური ხედებით ტკბობისთვის.",
     humidity: "40%",
     wind: "22 კმ/სთ",
     uv: "ძალიან მაღალი (8)",
@@ -611,9 +611,12 @@ export default function Home() {
       {/* ==================== NAVIGATION ==================== */}
       <nav className={`nav ${navScrolled ? "scrolled" : ""}`}>
         {/* Logo */}
-        <a href="#home" className="nav-logo">
+        <a href="#home" className="nav-logo" aria-label="GeorgiaTrips — მთავარი">
           <BrandLogo />
-          Georgia<span>Trips</span>
+          <span className="nav-wordmark">
+            <span className="nav-wordmark-georgia">Georgia</span>
+            <span className="nav-wordmark-trips">Trips</span>
+          </span>
         </a>
 
         {/* Desktop Links */}
@@ -632,21 +635,12 @@ export default function Home() {
             </button>
             {toursDropdownOpen && (
               <div className="nav-dropdown">
-                <a href="#tours" className="nav-dropdown-item">
-                  <span className="nav-dd-icon">🏔️</span>
-                  შიდა ტურები
-                </a>
-                <a href="#international" className="nav-dropdown-item">
-                  <span className="nav-dd-icon">✈️</span>
-                  საერთაშორისო ტურები
-                </a>
-                <a href="#batumi-tours" className="nav-dropdown-item">
-                  <span className="nav-dd-icon">🚗</span>
-                  ტრანსპორტი
-                </a>
+                <a href="#tours" className="nav-dropdown-item">შიდა ტურები</a>
+                <a href="#international" className="nav-dropdown-item">საერთაშორისო ტურები</a>
               </div>
             )}
           </li>
+          <li><a href="#batumi-tours">ტრანსპორტი</a></li>
           <li><a href="#why">სტატიები</a></li>
           <li><a href="#home">ჩვენ შესახებ</a></li>
           <li><a href="#booking">კონტაქტი</a></li>
@@ -731,12 +725,12 @@ export default function Home() {
             </button>
             {mobilToursOpen && (
               <div className="nav-mobile-sub">
-                <a href="#tours" onClick={() => setMobileMenuOpen(false)}>🏔️ შიდა ტურები</a>
-                <a href="#international" onClick={() => setMobileMenuOpen(false)}>✈️ საერთაშორისო ტურები</a>
-                <a href="#batumi-tours" onClick={() => setMobileMenuOpen(false)}>🚗 ტრანსპორტი</a>
+                <a href="#tours" onClick={() => setMobileMenuOpen(false)}>შიდა ტურები</a>
+                <a href="#international" onClick={() => setMobileMenuOpen(false)}>საერთაშორისო ტურები</a>
               </div>
             )}
           </div>
+          <a href="#batumi-tours" onClick={() => setMobileMenuOpen(false)}>ტრანსპორტი</a>
           <a href="#why" onClick={() => setMobileMenuOpen(false)}>სტატიები</a>
           <a href="#home" onClick={() => setMobileMenuOpen(false)}>ჩვენ შესახებ</a>
           <a href="#booking" onClick={() => setMobileMenuOpen(false)}>კონტაქტი</a>
@@ -1055,7 +1049,7 @@ export default function Home() {
                 },
                 {
                   img: "https://images.unsplash.com/photo-1555992336-03a23c7b20ee?w=800&q=80",
-                  city: "სანტორინი",
+                  city: "სანტორი��ი",
                   country: "საბერძნეთი",
                   tag: "დასვენება",
                   price: "₾1,400-დან",
@@ -1306,7 +1300,7 @@ export default function Home() {
                 const regions = [
                   { id: "GE-AB", name: "აფხაზეთი", desc: "მდინარე ენგურიდან შავ ზღვამდე" },
                   { id: "GE-AJ", name: "აჭარა", desc: "ბათუმი, შავი ზღვა, მთები" },
-                  { id: "GE-GU", name: "გურია", desc: "მწვანე მიდამოები დასავლეთ საქართველოში" },
+                  { id: "GE-GU", name: "გურია", desc: "მწვ���ნე მიდამოები დასავლეთ საქართველოში" },
                   { id: "GE-IM", name: "იმერეთი", desc: "ქუთაისი, ისტორიული ცენტრი" },
                   { id: "GE-KA", name: "კახეთი", desc: "ქართული ღვინის სამეფო" },
                   { id: "GE-KK", name: "ქვემო ქართლი", desc: "მრავალფეროვანი კულტურა" },
