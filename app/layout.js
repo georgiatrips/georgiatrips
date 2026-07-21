@@ -1,5 +1,6 @@
 import { Noto_Sans_Georgian, Noto_Serif_Georgian, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import RouteLoader from "./components/RouteLoader";
 
 const notoGeorgian = Noto_Sans_Georgian({
   variable: "--font-noto-georgian",
@@ -79,6 +80,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <RouteLoader />
         {children}
       </body>
     </html>

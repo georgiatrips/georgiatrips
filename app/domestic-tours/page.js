@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { bookTourOnWhatsApp } from "../lib/shared";
+import BookingModal from "../components/BookingModal";
 
 // ============================================================
 // DOMESTIC TOURS DATA
@@ -177,10 +177,90 @@ const TYPE_TABS = [
 ];
 
 const DURATION_TABS = [
-  { key: "all", label: "ნებისმიერი" },
+  { key: "all", label: "ნებისმიერი ხანგრძლივობა" },
   { key: "one", label: "ერთდღიანი" },
   { key: "multi", label: "მრავალდღიანი" },
 ];
+
+const SORT_OPTIONS = [
+  { key: "recommended", label: "რეკომენდებული" },
+  { key: "price-asc", label: "ფასი: დაბლიდან მაღლა" },
+  { key: "price-desc", label: "ფასი: მაღლიდან დაბლა" },
+  { key: "rating", label: "რეიტინგით" },
+];
+
+// Reusable premium filter dropdown (custom styled <select> replacement).
+function FilterDropdown({ icon, options, value, onChange, ariaLabel }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find((o) => o.key === value) || options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className={`dt-dd ${open ? "open" : ""}`} ref={ref}>
+      <button
+        type="button"
+        className="dt-dd-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className="dt-dd-icon">{icon}</span>
+        <span className="dt-dd-value">{selected.label}</span>
+        <svg className="dt-dd-caret" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open && (
+        <ul className="dt-dd-menu" role="listbox" aria-label={ariaLabel}>
+          {options.map((o) => (
+            <li key={o.key} role="option" aria-selected={o.key === value}>
+              <button
+                type="button"
+                className={`dt-dd-option ${o.key === value ? "active" : ""}`}
+                onClick={() => {
+                  onChange(o.key);
+                  setOpen(false);
+                }}
+              >
+                {o.label}
+                {o.key === value && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+const TypeIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+);
+const DurationIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+);
+const SortIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M6 12h12M10 18h4" /></svg>
+);
 
 const StarRating = ({ value }) => {
   const full = Math.round(value);
@@ -197,10 +277,12 @@ export default function DomesticToursPage() {
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
   const [duration, setDuration] = useState("all");
+  const [sort, setSort] = useState("recommended");
+  const [bookingTour, setBookingTour] = useState(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return DOMESTIC_TOURS.filter((t) => {
+    const list = DOMESTIC_TOURS.filter((t) => {
       const matchesSearch =
         !q ||
         t.title.toLowerCase().includes(q) ||
@@ -213,12 +295,25 @@ export default function DomesticToursPage() {
         (duration === "multi" && t.days > 1);
       return matchesSearch && matchesType && matchesDuration;
     });
-  }, [search, type, duration]);
+
+    const sorted = [...list];
+    if (sort === "price-asc") sorted.sort((a, b) => a.price - b.price);
+    else if (sort === "price-desc") sorted.sort((a, b) => b.price - a.price);
+    else if (sort === "rating") sorted.sort((a, b) => b.rating - a.rating);
+    return sorted;
+  }, [search, type, duration, sort]);
+
+  const activeFilterCount =
+    (type !== "all" ? 1 : 0) +
+    (duration !== "all" ? 1 : 0) +
+    (sort !== "recommended" ? 1 : 0) +
+    (search ? 1 : 0);
 
   const resetFilters = () => {
     setSearch("");
     setType("all");
     setDuration("all");
+    setSort("recommended");
   };
 
   return (
@@ -257,8 +352,8 @@ export default function DomesticToursPage() {
             <div className="gold-line" />
           </div>
 
-          {/* Search + filter panel */}
-          <div className="dt-filter-panel">
+          {/* Search + filter toolbar */}
+          <div className="dt-toolbar">
             <div className="dt-search">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
@@ -275,40 +370,10 @@ export default function DomesticToursPage() {
               )}
             </div>
 
-            <div className="dt-filter-groups">
-              <div className="dt-filter-group">
-                <span className="dt-filter-label">ტიპი</span>
-                <div className="dt-tabs" role="tablist" aria-label="ტურის ტიპი">
-                  {TYPE_TABS.map((tab) => (
-                    <button
-                      key={tab.key}
-                      role="tab"
-                      aria-selected={type === tab.key}
-                      className={`dt-tab ${type === tab.key ? "active" : ""}`}
-                      onClick={() => setType(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="dt-filter-group">
-                <span className="dt-filter-label">ხანგრძლივობა</span>
-                <div className="dt-tabs" role="tablist" aria-label="ტურის ხანგრძლივობა">
-                  {DURATION_TABS.map((tab) => (
-                    <button
-                      key={tab.key}
-                      role="tab"
-                      aria-selected={duration === tab.key}
-                      className={`dt-tab ${duration === tab.key ? "active" : ""}`}
-                      onClick={() => setDuration(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="dt-toolbar-filters">
+              <FilterDropdown icon={TypeIcon} options={TYPE_TABS} value={type} onChange={setType} ariaLabel="ტურის ტიპი" />
+              <FilterDropdown icon={DurationIcon} options={DURATION_TABS} value={duration} onChange={setDuration} ariaLabel="ტურის ხანგრძლივობა" />
+              <FilterDropdown icon={SortIcon} options={SORT_OPTIONS} value={sort} onChange={setSort} ariaLabel="დახარისხება" />
             </div>
           </div>
 
@@ -317,7 +382,7 @@ export default function DomesticToursPage() {
             <span className="dt-result-count">
               ნაპოვნია <strong>{filtered.length}</strong> ტური
             </span>
-            {(search || type !== "all" || duration !== "all") && (
+            {activeFilterCount > 0 && (
               <button className="dt-reset" onClick={resetFilters}>ფილტრების გასუფთავება</button>
             )}
           </div>
@@ -366,7 +431,7 @@ export default function DomesticToursPage() {
                       <StarRating value={tour.rating} />
                       <button
                         className="dt-book-btn"
-                        onClick={() => bookTourOnWhatsApp(tour.title, `₾${tour.price}-დან`)}
+                        onClick={() => setBookingTour(tour)}
                       >
                         დაჯავშნა
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -415,6 +480,10 @@ export default function DomesticToursPage() {
       </section>
 
       <Footer />
+
+      {bookingTour && (
+        <BookingModal tour={bookingTour} onClose={() => setBookingTour(null)} />
+      )}
     </>
   );
 }
