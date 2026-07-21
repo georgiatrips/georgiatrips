@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { MAP_PATHS } from "./mapPaths";
 
@@ -62,6 +62,79 @@ const BrandLogo = ({ width = 48, height = 48 }) => (
     </g>
   </svg>
 );
+
+const STATS = [
+  { value: 500, suffix: "+", label: "კმაყოფილი ტურისტი" },
+  { value: 45, suffix: "+", label: "უნიკალური მარშრუტი" },
+  { value: 12, suffix: "", label: "რეგიონი საქართველოში" },
+  { value: 24, suffix: "/7", label: "მხარდაჭერა ნებისმიერ დროს" },
+];
+
+const FAQS = [
+  {
+    q: "როგორ დავჯავშნო ტური?",
+    a: "აირჩიეთ სასურველი ტური და დააჭირეთ ღილაკს „დაჯავშნე“ — ავტომატურად გადახვალთ WhatsApp-ზე, სადაც ჩვენი კონსიერჟი 30 წუთში გიპასუხებთ. ასევე შეგიძლიათ შეავსოთ ჯავშნის ფორმა საიტზე.",
+  },
+  {
+    q: "შესაძლებელია თუ არა ინდივიდუალური მარშრუტის შედგენა?",
+    a: "რა თქმა უნდა! ჩვენი გუნდი შეადგენს სრულად პერსონალიზებულ მარშრუტს თქვენი ინტერესების, ბიუჯეტისა და დროის მიხედვით — მთის თავგადასავლებიდან ღვინის ტურებამდე.",
+  },
+  {
+    q: "რა შედის ტურის ფასში?",
+    a: "სტანდარტულად ფასში შედის ტრანსპორტი კომფორტული ავტომობილით, პროფესიონალი გიდი და დაზღვევა. VIP პაკეტებში ემატება სასტუმრო, კვება და დამატებითი სერვისები — დეტალები დაზუსტდება ჯავშნისას.",
+  },
+  {
+    q: "ხელმისაწვდომია თუ არა ჰალალ კვება?",
+    a: "დიახ, ჩვენ ვთანამშრომლობთ ჰალალ სერტიფიცირებულ რესტორნებთან თბილისში, ბათუმსა და მთავარ ტურისტულ მიმართულებებზე. წინასწარ გვაცნობეთ და ყველაფერს მოვამზადებთ.",
+  },
+  {
+    q: "რომელ ენებზე საუბრობენ გიდები?",
+    a: "ჩვენი გიდები საუბრობენ ქართულ, ინგლისურ, რუსულ და არაბულ ენებზე. სხვა ენის საჭიროების შემთხვევაში წინასწარ შეგვატყობინეთ.",
+  },
+  {
+    q: "შესაძლებელია თუ არა ჯავშნის გაუქმება?",
+    a: "დიახ, ჯავშნის უფასო გაუქმება შესაძლებელია ტურის დაწყებამდე 48 საათით ადრე. დეტალური პირობები დამოკიდებულია ტურის ტიპზე და დაზუსტდება დაჯავშნისას.",
+  },
+];
+
+// Animated counter that starts when it scrolls into view
+const CountUp = ({ end, suffix = "", duration = 1800 }) => {
+  const ref = useRef(null);
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    let rafId;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        const start = performance.now();
+        const tick = (now) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setValue(Math.round(eased * end));
+          if (progress < 1) rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [end, duration]);
+
+  return (
+    <span ref={ref} className="stat-value">
+      {value}
+      <em>{suffix}</em>
+    </span>
+  );
+};
 
 const CATEGORIES = [
   {
@@ -446,6 +519,7 @@ export default function Home() {
   const [showAllSocial, setShowAllSocial] = useState(false);
   const [activeMapRegion, setActiveMapRegion] = useState(null);
   const [activeWeatherTab, setActiveWeatherTab] = useState("tbilisi");
+  const [openFaq, setOpenFaq] = useState(0);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -479,6 +553,28 @@ export default function Home() {
       clearInterval(interval);
       clearInterval(heroInterval);
     };
+  }, []);
+
+  // Scroll-reveal animation for all sections
+  useEffect(() => {
+    const targets = document.querySelectorAll(
+      ".section-header, .categories-grid, .why-wrap, .booking-wrap, .weather-wrap, .map-wrap, .reviews-slider, .social-feed-grid, .stats-grid, .faq-list, .batumi-section-header, .intl-header"
+    );
+    targets.forEach((el) => el.classList.add("reveal"));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
   const handleBookNow = (tourTitle, tourPrice) => {
@@ -602,9 +698,34 @@ export default function Home() {
           <span className="loc-text">{HERO_SLIDES[currentHeroSlide].label}</span>
         </div>
 
+        <div className="hero-dots" role="tablist" aria-label="სლაიდები">
+          {HERO_SLIDES.map((slide, idx) => (
+            <button
+              key={idx}
+              className={`hero-dot ${idx === currentHeroSlide ? "active" : ""}`}
+              onClick={() => setCurrentHeroSlide(idx)}
+              aria-label={slide.label}
+              aria-selected={idx === currentHeroSlide}
+              role="tab"
+            />
+          ))}
+        </div>
+
         <div className="hero-scroll-hint">
           <span>გადაახვიე</span>
           <div className="scroll-arrow"></div>
+        </div>
+      </section>
+
+      {/* ==================== STATS BAND ==================== */}
+      <section className="stats-band" aria-label="სტატისტიკა">
+        <div className="stats-grid">
+          {STATS.map((stat, idx) => (
+            <div key={idx} className="stat-item">
+              <CountUp end={stat.value} suffix={stat.suffix} />
+              <span className="stat-label">{stat.label}</span>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -1041,7 +1162,7 @@ export default function Home() {
                   { id: "GE-AB", name: "აფხაზეთი", desc: "მდინარე ენგურიდან შავ ზღვამდე", color: "#29b2b7" },
                   { id: "GE-AJ", name: "აჭარა", desc: "ბათუმი, შავი ზღვა, მთები", color: "#fab418" },
                   { id: "GE-GU", name: "გურია", desc: "მწვანე მიდამოები დასავლეთ საქართველოში", color: "#29b2b7" },
-                  { id: "GE-IM", name: "იმერეთი", desc: "კუტაისი, ისტორიული ცენტრი", color: "#106da4" },
+                  { id: "GE-IM", name: "იმერეთი", desc: "ქუთაისი, ისტორიული ცენტრი", color: "#106da4" },
                   { id: "GE-KA", name: "კახეთი", desc: "ქართული ღვინის სამეფო", color: "#fab418" },
                   { id: "GE-KK", name: "ქვემო ქართლი", desc: "მრავალფეროვანი კულტურა", color: "#106da4" },
                   { id: "GE-MM", name: "მცხეთა-მთიანეთი", desc: "ყაზბეგი, გერგეთი, ჯვარი", color: "#29b2b7" },
@@ -1069,7 +1190,7 @@ export default function Home() {
                   { id: "GE-AB", name: "აფხაზეთი", desc: "მდინარე ენგურიდან შავ ზღვამდე" },
                   { id: "GE-AJ", name: "აჭარა", desc: "ბათუმი, შავი ზღვა, მთები" },
                   { id: "GE-GU", name: "გურია", desc: "მწვანე მიდამოები დასავლეთ საქართველოში" },
-                  { id: "GE-IM", name: "იმერეთი", desc: "კუტაისი, ისტორიული ცენტრი" },
+                  { id: "GE-IM", name: "იმერეთი", desc: "ქუთაისი, ისტორიული ცენტრი" },
                   { id: "GE-KA", name: "კახეთი", desc: "ქართული ღვინის სამეფო" },
                   { id: "GE-KK", name: "ქვემო ქართლი", desc: "მრავალფეროვანი კულტურა" },
                   { id: "GE-MM", name: "მცხეთა-მთიანეთი", desc: "ყაზბეგი, გერგეთი, ჯვარი" },
@@ -1161,6 +1282,40 @@ export default function Home() {
               ))}
             </div>
             <button className="slider-btn" onClick={() => setActiveReviewSlide((prev) => (prev + 1) % REVIEWS.length)}>›</button>
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== FAQ SECTION ==================== */}
+      <section className="section" id="faq">
+        <div className="section-inner">
+          <div className="section-header">
+            <span className="section-eyebrow">ხშირად დასმული კითხვები</span>
+            <h2 className="section-title">გაქვს კითხვა? გვაქვს პასუხი</h2>
+            <p className="section-desc">ყველაფერი, რაც უნდა იცოდე მოგზაურობის დაგეგმვამდე</p>
+            <div className="gold-line"></div>
+          </div>
+          <div className="faq-list">
+            {FAQS.map((faq, idx) => (
+              <div key={idx} className={`faq-item ${openFaq === idx ? "open" : ""}`}>
+                <button
+                  className="faq-question"
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  aria-expanded={openFaq === idx}
+                  aria-controls={`faq-answer-${idx}`}
+                >
+                  <span>{faq.q}</span>
+                  <svg className="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                <div className="faq-answer" id={`faq-answer-${idx}`}>
+                  <div className="faq-answer-inner">
+                    <p>{faq.a}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -1353,6 +1508,17 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ==================== BACK TO TOP ==================== */}
+      <button
+        className={`back-to-top ${navScrolled ? "visible" : ""}`}
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="დაბრუნება თავში"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+      </button>
+
       {/* ==================== FLOATING WHATSAPP BUTTON ==================== */}
       <div className="floating-wa">
         <span className="floating-wa-tooltip">მოგვწერე WhatsApp-ზე!</span>
@@ -1372,9 +1538,21 @@ export default function Home() {
               </div>
               <p>პრემიუმ ტურები საქართველოში — ყველა ტიპის მოგზაურისთვის. კომფორტი, ფუფუნება, ემოცია.</p>
               <div className="footer-socials">
-                <a href="#" className="social-link">fb</a>
-                <a href="#" className="social-link">in</a>
-                <a href={WA_LINK} className="social-link" target="_blank" rel="noopener noreferrer">wa</a>
+                <a href="#" className="social-link" aria-label="Facebook">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                <a href="#" className="social-link" aria-label="Instagram">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+                  </svg>
+                </a>
+                <a href={WA_LINK} className="social-link" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884zm8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                  </svg>
+                </a>
               </div>
             </div>
             <div className="footer-col">

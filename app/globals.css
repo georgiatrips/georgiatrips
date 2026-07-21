@@ -24,11 +24,13 @@
   --shadow-hover: 0 20px 40px -15px rgba(0,0,0,0.12);
   --transition:  0.3s cubic-bezier(0.4,0,0.2,1);
   --max-w:       1280px;
+  --font-main:   var(--font-noto-georgian), system-ui, -apple-system, sans-serif;
+  --font-head:   var(--font-playfair), var(--font-noto-serif-georgian), Georgia, serif;
 }
 
 /* ---------- Reset ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; }
+html { scroll-behavior: smooth; font-size: 16px; background: var(--bg-main); }
 body {
   font-family: var(--font-main);
   background: var(--bg-main);
@@ -2540,4 +2542,210 @@ button { cursor: pointer; font-family: var(--font-main); border: none; }
   .section { padding: 44px 4%; }
   .batumi-cin-card { height: 340px; }
   .booking-form-wrap { padding: 1.25rem 0.9rem; }
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ============================================================
+   HERO SLIDE DOTS
+   ============================================================ */
+.hero-dots {
+  position: absolute;
+  bottom: 2.4rem;
+  right: 5%;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  animation: heroFadeUp 1s 1.2s ease-out both;
+}
+.hero-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 0;
+  transition: all 0.3s ease;
+}
+.hero-dot:hover { background: rgba(255,255,255,0.6); }
+.hero-dot.active {
+  width: 26px;
+  border-radius: 6px;
+  background: var(--yellow);
+  border-color: var(--yellow);
+}
+@media (max-width: 768px) {
+  .hero-dots { display: none; }
+}
+
+/* ============================================================
+   STATS BAND
+   ============================================================ */
+.stats-band {
+  background: #0d233a;
+  padding: 4.5rem 5%;
+  position: relative;
+  overflow: hidden;
+}
+.stats-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 90% at 15% 50%, rgba(41,178,183,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 80% at 85% 50%, rgba(16,109,164,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.stats-grid {
+  position: relative;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+}
+.stat-value {
+  font-family: var(--font-head);
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value em {
+  font-style: normal;
+  color: var(--yellow);
+}
+.stat-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.05em;
+}
+@media (max-width: 768px) {
+  .stats-band { padding: 3rem 5%; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem 1rem; }
+}
+
+/* ============================================================
+   FAQ SECTION
+   ============================================================ */
+.faq-list {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.faq-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.faq-item.open {
+  border-color: rgba(41,178,183,0.45);
+  box-shadow: var(--shadow-card);
+}
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.4rem;
+  background: transparent;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  transition: color var(--transition);
+}
+.faq-question:hover { color: var(--blue); }
+.faq-chevron {
+  flex-shrink: 0;
+  color: var(--teal);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+.faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.faq-item.open .faq-answer { grid-template-rows: 1fr; }
+.faq-answer-inner { overflow: hidden; }
+.faq-answer-inner p {
+  padding: 0 1.4rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--text-mute);
+  line-height: 1.7;
+}
+
+/* ============================================================
+   BACK TO TOP
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  bottom: 6.5rem;
+  right: 2rem;
+  z-index: 900;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  color: var(--text-dark);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease, background var(--transition), color var(--transition);
+}
+.back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.back-to-top:hover {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--white);
+}
+@media (max-width: 768px) {
+  .back-to-top { bottom: 5.5rem; right: 1.25rem; width: 42px; height: 42px; }
+}
+
+/* ============================================================
+   FOOTER SOCIAL ICONS (SVG)
+   ============================================================ */
+.footer-socials .social-link svg {
+  width: 16px; height: 16px;
+  display: block;
 }
