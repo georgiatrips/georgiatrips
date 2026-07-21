@@ -76,19 +76,21 @@ button { cursor: pointer; font-family: var(--font-main); border: none; }
 }
 .nav-wordmark {
   display: inline-flex;
-  align-items: baseline;
-  font-family: var(--font-head);
+  align-items: center;
+  gap: 0.38rem;
+  font-family: var(--font-main);
+  font-size: 1rem;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.035em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 .nav-wordmark-georgia {
   color: var(--white);
-  font-size: 1.35rem;
-  font-weight: 500;
 }
 .nav-wordmark-trips {
   color: var(--teal);
-  font-size: 1.35rem;
   font-weight: 800;
 }
 .logo-container {
