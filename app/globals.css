@@ -203,6 +203,17 @@ button { cursor: pointer; font-family: var(--font-main); border: none; }
   z-index: 1100;
   animation: dropFadeIn 0.18s ease;
 }
+/* Invisible bridge so the cursor keeps hovering across the gap
+   between the trigger and the dropdown panel */
+.nav-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 0;
+  right: 0;
+  height: 14px;
+  background: transparent;
+}
 @keyframes dropFadeIn {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }

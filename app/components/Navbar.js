@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { BrandLogo, WA_LINK, WhatsAppIcon } from "../lib/shared";
 
@@ -15,6 +15,19 @@ export default function Navbar({ active = "home" }) {
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [activeLang, setActiveLang] = useState("KA");
   const [activeCurrency, setActiveCurrency] = useState("GEL");
+
+  // Hover-intent: keep a dropdown open briefly after the cursor leaves the
+  // trigger so it doesn't close while moving toward the menu items.
+  const closeTimers = useRef({});
+  const openDropdown = (setter) => {
+    Object.values(closeTimers.current).forEach(clearTimeout);
+    closeTimers.current = {};
+    setter(true);
+  };
+  const scheduleClose = (key, setter) => {
+    clearTimeout(closeTimers.current[key]);
+    closeTimers.current[key] = setTimeout(() => setter(false), 220);
+  };
 
   useEffect(() => {
     const handleScroll = () => setNavScrolled(window.scrollY > 50);
@@ -39,8 +52,8 @@ export default function Navbar({ active = "home" }) {
         <li><Link href="/#home">მთავარი</Link></li>
         <li
           className="nav-dropdown-wrap"
-          onMouseEnter={() => setToursDropdownOpen(true)}
-          onMouseLeave={() => setToursDropdownOpen(false)}
+          onMouseEnter={() => openDropdown(setToursDropdownOpen)}
+          onMouseLeave={() => scheduleClose("tours", setToursDropdownOpen)}
         >
           <button
             className={`nav-dropdown-trigger ${active === "tours" ? "active" : ""}`}
@@ -68,7 +81,7 @@ export default function Navbar({ active = "home" }) {
       {/* Right Side Controls */}
       <div className="nav-right">
         {/* Language Switcher */}
-        <div className="nav-control-wrap" onMouseEnter={() => setLangDropdownOpen(true)} onMouseLeave={() => setLangDropdownOpen(false)}>
+        <div className="nav-control-wrap" onMouseEnter={() => openDropdown(setLangDropdownOpen)} onMouseLeave={() => scheduleClose("lang", setLangDropdownOpen)}>
           <button className="nav-control-btn" aria-label="ენის შეცვლა">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -90,7 +103,7 @@ export default function Navbar({ active = "home" }) {
         </div>
 
         {/* Currency Switcher */}
-        <div className="nav-control-wrap" onMouseEnter={() => setCurrencyDropdownOpen(true)} onMouseLeave={() => setCurrencyDropdownOpen(false)}>
+        <div className="nav-control-wrap" onMouseEnter={() => openDropdown(setCurrencyDropdownOpen)} onMouseLeave={() => scheduleClose("currency", setCurrencyDropdownOpen)}>
           <button className="nav-control-btn" aria-label="ვალუტის შეცვლა">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" /><path d="M12 6v12M9 8h4.5a2.5 2.5 0 0 1 0 5H9m0 0h4.5a2.5 2.5 0 0 1 0 5H9" />
