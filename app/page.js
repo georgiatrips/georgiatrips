@@ -35,32 +35,16 @@ const HERO_SLIDES = [
   { image: "/batumi.png", label: "Batumi, Georgia" }
 ];
 
-// Beautiful Logo component matching the user upload design & colors
+// Brand logo — uses /logo.png from the public folder
 const BrandLogo = ({ width = 48, height = 48 }) => (
-  <svg width={width} height={height} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Blue Wing */}
-    <path 
-      d="M26.5 28C24.5 27 25 22.5 35 18.5C49.5 12.5 67 11.5 71.5 12.5C72.5 13 72.5 14.5 70 18.5C64.5 27 52.5 32 41.5 32C33.5 32 29.5 29.5 26.5 28Z" 
-      fill="#106da4" 
-    />
-    {/* Teal Wing */}
-    <path 
-      d="M53.5 60.5C53.5 61.5 52 61.5 52 50.5C52.5 38.5 59.5 24 71 13.5C72 12.5 72.5 13 71.5 15.5C66.5 27 61 40 57.5 51C55.5 57 53.5 59.5 53.5 60.5Z" 
-      fill="#29b2b7" 
-    />
-    {/* Orange Pointer */}
-    <path 
-      d="M38.5 37.5L52 32.5C50 37 49.5 45.5 49.5 48.5C49.5 49 49 49 48.5 48.5L38.5 37.5Z" 
-      fill="#fab418" 
-    />
-    {/* White Airplane */}
-    <g transform="translate(62, 12) rotate(45) scale(0.6)">
-      <path 
-        d="M21 16L5 21L8.5 16L3.5 14.5L6.5 13L5 10L7 9.5L9.5 11.5L16 9L11.5 3L14.5 1.5L21 6.5L25 5L26 6L21 16Z" 
-        fill="#ffffff" 
-      />
-    </g>
-  </svg>
+  <Image
+    src="/logo.png"
+    alt="Georgia Trips logo"
+    width={width}
+    height={height}
+    className="brand-logo-img"
+    style={{ objectFit: "contain", width: "auto", height: `${height}px` }}
+  />
 );
 
 const STATS = [
@@ -145,7 +129,7 @@ const CATEGORIES = [
   {
     icon: "✈️",
     title: "ტურები საზღვარგარეთ",
-    desc: "ევროპა, აზია, ხმელთაშუა ზღვა — სრული ორგანიზებით და ექსკლუზიური პირობებით.",
+    desc: "ევროპა, აზია, ხმელ��აშუა ზღვა — სრული ორგანიზებით და ექსკლუზიური პირობებით.",
   },
   {
     icon: "💎",
@@ -276,9 +260,9 @@ const TOURS = [
 const REVIEWS = [
   [
     {
-      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური იყო უმაღლესი დონის. ნამდვილი ფუფუნება საქართველოში!",
+      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური იყო უმაღლესი დონის. ნამდვილი ფუფ��ნება საქართველოში!",
       author: "ალი ალ-ფარაჯი",
-      from: "დუბაი, არაბთა გაერთიანებული საამიროები",
+      from: "დუბაი, არაბთა გაერთიანებული საამირ��ები",
       avatar: "A",
     },
     {
@@ -374,82 +358,81 @@ const SOCIAL_POSTS = [
   }
 ];
 
-const WEATHER_DATA = {
+// Location metadata + coordinates for live weather (Open-Meteo, no API key required)
+const WEATHER_LOCATIONS = {
   tbilisi: {
     name: "თბილისი",
-    temp: "28°C",
-    condition: "მზიანი",
     desc: "იდეალური ამინდია ძველ თბილისში სასეირნოდ და მყუდრო კაფეებში დროის გასატარებლად.",
-    humidity: "42%",
-    wind: "12 კმ/სთ",
-    uv: "საშუალო (5)",
-    forecast: [
-      { day: "ხვალ", temp: "29°C", condition: "sun" },
-      { day: "ზეგ", temp: "27°C", condition: "cloud-sun" },
-      { day: "შემდეგ", temp: "28°C", condition: "sun" }
-    ],
-    icon: "sun"
+    lat: 41.7151,
+    lon: 44.8271
   },
   batumi: {
     name: "ბათუმი",
-    temp: "26°C",
-    condition: "ნაწილობრივ ღრუბლიანი",
     desc: "ზღვის ნიავი და სასიამოვნო ტემპერატურა ბულვარში სასეირნოდ.",
-    humidity: "75%",
-    wind: "18 კმ/სთ",
-    uv: "საშუალო (4)",
-    forecast: [
-      { day: "ხვალ", temp: "25°C", condition: "rain" },
-      { day: "ზეგ", temp: "27°C", condition: "sun" },
-      { day: "შემდეგ", temp: "28°C", condition: "sun" }
-    ],
-    icon: "cloud-sun"
+    lat: 41.6168,
+    lon: 41.6367
   },
   kazbegi: {
     name: "ყაზბეგი",
-    temp: "17°C",
-    condition: "მზიანი",
     desc: "გრილი და სუფთა მთის ჰაერი, იდეალური პირობებია გერგეთის სამების მოსანახულებლად.",
-    humidity: "35%",
-    wind: "15 კმ/სთ",
-    uv: "მაღალი (7)",
-    forecast: [
-      { day: "ხვალ", temp: "18°C", condition: "sun" },
-      { day: "ზეგ", temp: "16°C", condition: "cloud-sun" },
-      { day: "შემდეგ", temp: "15°C", condition: "storm" }
-    ],
-    icon: "sun"
+    lat: 42.6580,
+    lon: 44.6421
   },
   mestia: {
     name: "მესტია",
-    temp: "19°C",
-    condition: "მცირე ღრუბელი",
     desc: "საუკეთესო დრო სვანეთის კოშკების დასათვალიერებლად და ლაშქრობებისთვის.",
-    humidity: "50%",
-    wind: "8 კმ/სთ",
-    uv: "საშუალო (5)",
-    forecast: [
-      { day: "ხვალ", temp: "20°C", condition: "sun" },
-      { day: "ზეგ", temp: "18°C", condition: "rain" },
-      { day: "შემდეგ", temp: "17°C", condition: "sun" }
-    ],
-    icon: "cloud-sun"
+    lat: 43.0453,
+    lon: 42.7289
   },
   gudauri: {
     name: "გუდაური",
-    temp: "15°C",
-    condition: "მზიანი",
     desc: "მშვენიერი ამინდია პარაპლანით ფრენისთვის და ალპური ხედებით ტკბობისთვის.",
-    humidity: "40%",
-    wind: "22 კმ/სთ",
-    uv: "ძალიან მაღალი (8)",
-    forecast: [
-      { day: "ხვალ", temp: "16°C", condition: "sun" },
-      { day: "ზეგ", temp: "14°C", condition: "cloud-sun" },
-      { day: "შემდეგ", temp: "13°C", condition: "rain" }
-    ],
-    icon: "sun"
+    lat: 42.4769,
+    lon: 44.4783
   }
+};
+
+// Map WMO weather codes -> our icon keys + Georgian condition text
+const weatherCodeToIcon = (code) => {
+  if (code === 0) return "sun";
+  if (code >= 1 && code <= 3) return "cloud-sun";
+  if (code >= 45 && code <= 48) return "cloud-sun";
+  if (code >= 51 && code <= 67) return "rain";
+  if (code >= 71 && code <= 77) return "snow";
+  if (code >= 80 && code <= 82) return "rain";
+  if (code >= 85 && code <= 86) return "snow";
+  if (code >= 95) return "storm";
+  return "cloud-sun";
+};
+
+const weatherCodeToCondition = (code) => {
+  if (code === 0) return "მზიანი";
+  if (code === 1) return "უმეტესად მზიანი";
+  if (code >= 2 && code <= 3) return "ნაწილობრივ ღრუბლიანი";
+  if (code >= 45 && code <= 48) return "ნისლი";
+  if (code >= 51 && code <= 67) return "წვიმა";
+  if (code >= 71 && code <= 77) return "თოვლი";
+  if (code >= 80 && code <= 82) return "წვიმიანი";
+  if (code >= 85 && code <= 86) return "თოვს";
+  if (code >= 95) return "ჭექა-ქუხილი";
+  return "ღრუბლიანი";
+};
+
+const uvLabel = (uv) => {
+  const v = Math.round(uv ?? 0);
+  if (v <= 2) return `დაბალი (${v})`;
+  if (v <= 5) return `საშუალო (${v})`;
+  if (v <= 7) return `მაღალი (${v})`;
+  if (v <= 10) return `ძალიან მაღალი (${v})`;
+  return `ექსტრემალური (${v})`;
+};
+
+const GEO_WEEKDAYS = ["კვი", "ორშ", "სამ", "ოთხ", "ხუთ", "პარ", "შაბ"];
+const forecastDayLabel = (dateStr, offset) => {
+  if (offset === 1) return "ხვალ";
+  if (offset === 2) return "ზეგ";
+  const d = new Date(dateStr);
+  return GEO_WEEKDAYS[d.getDay()] || "შემდეგ";
 };
 
 const ICONS = {
@@ -507,6 +490,14 @@ const ICONS = {
       <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" fill="var(--text-mute)" fillOpacity="0.1" stroke="var(--text-mute)"/>
       <polyline points="13 12 9 17 12 17 10 22" stroke="#fab418" strokeWidth="2.5" fill="#fab418"/>
     </svg>
+  ),
+  snow: (
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25" fill="var(--blue)" fillOpacity="0.1"/>
+      <line x1="8" y1="20" x2="8.01" y2="20"/><line x1="8" y1="22" x2="8.01" y2="22"/>
+      <line x1="12" y1="21" x2="12.01" y2="21"/><line x1="12" y1="23" x2="12.01" y2="23"/>
+      <line x1="16" y1="20" x2="16.01" y2="20"/><line x1="16" y1="22" x2="16.01" y2="22"/>
+    </svg>
   )
 };
 
@@ -520,6 +511,11 @@ export default function Home() {
   const [activeMapRegion, setActiveMapRegion] = useState(null);
   const [activeWeatherTab, setActiveWeatherTab] = useState("tbilisi");
   const [openFaq, setOpenFaq] = useState(0);
+
+  // Live weather (Open-Meteo — free, no API key)
+  const [liveWeather, setLiveWeather] = useState(null);
+  const [weatherStatus, setWeatherStatus] = useState("loading"); // loading | live | error
+  const [weatherUpdatedAt, setWeatherUpdatedAt] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -552,6 +548,69 @@ export default function Home() {
       window.removeEventListener("scroll", handleScroll);
       clearInterval(interval);
       clearInterval(heroInterval);
+    };
+  }, []);
+
+  // Fetch LIVE weather for all locations from Open-Meteo
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchWeather = async () => {
+      try {
+        const entries = Object.entries(WEATHER_LOCATIONS);
+        const results = await Promise.all(
+          entries.map(async ([key, loc]) => {
+            const url =
+              `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}` +
+              `&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m` +
+              `&daily=weather_code,temperature_2m_max,uv_index_max&timezone=auto&forecast_days=4`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`weather ${res.status}`);
+            const data = await res.json();
+
+            const cur = data.current;
+            const daily = data.daily;
+
+            const forecast = [1, 2, 3].map((i) => ({
+              day: forecastDayLabel(daily.time[i], i),
+              temp: `${Math.round(daily.temperature_2m_max[i])}°C`,
+              condition: weatherCodeToIcon(daily.weather_code[i])
+            }));
+
+            return [
+              key,
+              {
+                name: loc.name,
+                desc: loc.desc,
+                temp: `${Math.round(cur.temperature_2m)}°C`,
+                condition: weatherCodeToCondition(cur.weather_code),
+                humidity: `${Math.round(cur.relative_humidity_2m)}%`,
+                wind: `${Math.round(cur.wind_speed_10m)} კმ/სთ`,
+                uv: uvLabel(daily.uv_index_max?.[0]),
+                icon: weatherCodeToIcon(cur.weather_code),
+                forecast
+              }
+            ];
+          })
+        );
+
+        if (cancelled) return;
+        setLiveWeather(Object.fromEntries(results));
+        setWeatherStatus("live");
+        setWeatherUpdatedAt(new Date());
+      } catch (err) {
+        console.log("[v0] weather fetch failed:", err.message);
+        if (!cancelled) setWeatherStatus("error");
+      }
+    };
+
+    fetchWeather();
+    // Refresh every 10 minutes to keep it live
+    const weatherInterval = setInterval(fetchWeather, 10 * 60 * 1000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(weatherInterval);
     };
   }, []);
 
@@ -711,10 +770,6 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="hero-scroll-hint">
-          <span>გადაახვიე</span>
-          <div className="scroll-arrow"></div>
-        </div>
       </section>
 
       {/* ==================== STATS BAND ==================== */}
@@ -1169,7 +1224,7 @@ export default function Home() {
                   { id: "GE-RL", name: "რაჭა-ლეჩხუმი", desc: "მთიანი სილამაზე", color: "#106da4" },
                   { id: "GE-SJ", name: "სამცხე-ჯავახეთი", desc: "ვარძია, ბორჯომი", color: "#29b2b7" },
                   { id: "GE-SK", name: "შიდა ქართლი", desc: "გორი, ქართული ვაკე", color: "#fab418" },
-                  { id: "GE-SZ", name: "სამეგრელო-ზემო სვანეთი", desc: "მესტია, სვანური კოშკები", color: "#106da4" },
+                  { id: "GE-SZ", name: "სამეგრელო-ზემო სვანეთ��", desc: "მესტია, სვანური კოშკები", color: "#106da4" },
                   { id: "GE-TB", name: "თბილისი", desc: "საქართველოს დედაქალაქი", color: "#fab418" },
                 ].map((region) => (
                   <path
@@ -1441,24 +1496,56 @@ export default function Home() {
             <p className="section-desc">შეიტყვეთ მიმდინარე ამინდი და პროგნოზი საქართველოს მთავარ ტურისტულ მიმართულებებში</p>
             <div className="gold-line"></div>
           </div>
-          
+
+          {/* Live status indicator */}
+          <div className={`weather-live-status ${weatherStatus}`} aria-live="polite">
+            {weatherStatus === "live" && (
+              <>
+                <span className="weather-live-dot" aria-hidden="true"></span>
+                <span>
+                  რეალურ დროში
+                  {weatherUpdatedAt && (
+                    <span className="weather-updated">
+                      {" · განახლდა "}
+                      {weatherUpdatedAt.toLocaleTimeString("ka-GE", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
+                </span>
+              </>
+            )}
+            {weatherStatus === "loading" && <span>ცოცხალი ამინდის ჩატვირთვა...</span>}
+            {weatherStatus === "error" && <span>ამინდის მონაცემები დროებით მიუწვდომელია</span>}
+          </div>
+
           <div className="weather-wrap">
             {/* Location selector tabs */}
             <div className="weather-tabs">
-              {Object.keys(WEATHER_DATA).map((key) => (
+              {Object.keys(WEATHER_LOCATIONS).map((key) => (
                 <button
                   key={key}
                   className={`weather-tab-btn ${activeWeatherTab === key ? "active" : ""}`}
                   onClick={() => setActiveWeatherTab(key)}
                 >
-                  {WEATHER_DATA[key].name}
+                  {WEATHER_LOCATIONS[key].name}
                 </button>
               ))}
             </div>
 
             {/* Weather Dashboard Card */}
             {(() => {
-              const current = WEATHER_DATA[activeWeatherTab];
+              const meta = WEATHER_LOCATIONS[activeWeatherTab];
+              const live = liveWeather?.[activeWeatherTab];
+              const current = live || {
+                name: meta.name,
+                desc: meta.desc,
+                temp: "—",
+                condition: weatherStatus === "error" ? "მიუწვდომელია" : "იტვირთება...",
+                humidity: "—",
+                wind: "—",
+                uv: "—",
+                icon: "cloud-sun",
+                forecast: [1, 2, 3].map((i) => ({ day: "—", temp: "—", condition: "cloud-sun" }))
+              };
               return (
                 <div className="weather-dashboard">
                   <div className="weather-main-card">
