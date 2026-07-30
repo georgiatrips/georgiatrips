@@ -52,8 +52,8 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link href="/#tours">ტურები</Link></li>
               <li><Link href="/#hotels">სასტუმროები</Link></li>
-              <li><Link href="/#batumi-tours">ტრანსპორტი / ტრანსფერი</Link></li>
-              <li><Link href="/#why">სტატიები</Link></li>
+              <li><Link href="/transfers">ტრანსპორტი / ტრანსფერი</Link></li>
+              <li><Link href="/posts">სტატიები</Link></li>
               <li><Link href="/#reviews">მიმოხილვები</Link></li>
               <li><Link href="/#booking">დაჯავშნა</Link></li>
             </ul>

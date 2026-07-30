@@ -112,7 +112,7 @@ export default function DatePicker({
     d.setHours(0, 0, 0, 0);
     const t = new Date();
     t.setHours(0, 0, 0, 0);
-    return d < t;
+    return d <= t;
   };
 
   // Check if a day is in availableDates (format "MM.DD")

@@ -1024,7 +1024,6 @@ export default function Home() {
 
                   {/* Right Column: Information & Attractions Grid */}
                   <div className="pop-info-col">
-                    <h3 className="pop-subheading">სად წახვიდეთ ბათუმიდან</h3>
                     <p className="pop-description">
                       საუკეთესო ერთდღიანი ტურები ბათუმიდან. აირჩიეთ სასიამოვნო ლოკაციები — ბათუმის სიახლოვეს მდებარე ბუნება, ჩანჩქერები და <span style={{color:'#29b2b7'}}>ბათუმის სანაპირო</span>. მოინახულეთ მთები, <span style={{color:'#29b2b7'}}>ჩანჩქერები</span> და <span style={{color:'#29b2b7'}}>პლაჟები</span> — ბათუმი თქვენს შვებულებას დაუვიწყარს გახდის.
                     </p>
@@ -1257,19 +1256,6 @@ export default function Home() {
       {/* ==================== TRANSPORT SECTION ==================== */}
       <section className="transport-section" id="batumi-tours">
         <div className="container transport-hero">
-          <div className="themed-section-header" style={{ marginBottom: "2.2rem", textAlign: "center" }}>
-            <span className="pop-eyebrow">✦ კომფორტული მგზავრობა</span>
-            <h2 className="pop-main-title">
-              ტრანსპორტი & <span className="teal-accent">ტრანსფერები</span>
-            </h2>
-            <div className="transport-minimal-line">
-              <span>🚗 სედანი, მინივენი & SUV</span>
-              <span className="trans-dot">•</span>
-              <span>🛫 აეროპ���რტის დახვედრა 24/7</span>
-              <span className="trans-dot">•</span>
-              <span>🛡️ ინდივიდუალური მარშრუტები</span>
-            </div>
-          </div>
           <div className="transport-slider-wrapper">
             <button
               className="slider-arrow slider-arrow-left"
@@ -1367,9 +1353,9 @@ export default function Home() {
       <section className="section gallery-bg" id="gallery">
         <div className="section-inner">
           <div className="section-header">
-            <span className="section-eyebrow">სოციალური მედია</span>
-            <h2 className="section-title">საქართველო ჩვენი ობიექტივით</h2>
-            <p className="section-desc">გაეცანით ჩვენს მოგზაურობებს სოციალური ქსელებიდან — რეალური კადრები და ემოციები</p>
+            <span className="section-eyebrow">თვალი ადევნეთ ჩვენს მოგზაურობას</span>
+            <h2 className="section-title">საქართველო ჩვენი თვალით</h2>
+            <p className="section-desc">აღმოაჩინეთ საქართველოს ულამაზესი ხედები, რეალური კადრები და დაუვიწყარი ემოციები ჩვენი სოციალური გვერდებიდან</p>
             <div className="gold-line"></div>
           </div>
 
@@ -1472,8 +1458,8 @@ export default function Home() {
         <div className="section-inner">
           <div className="section-header">
             <span className="section-eyebrow">ინტერაქტიური რუკა</span>
-            <h2 className="section-title">საქართველოს რეგიონები</h2>
-            <p className="section-desc">გაეცანი საქართველოს ყველა კუთხეს — გადაიტანე კურსორი რეგიონზე</p>
+            <h2 className="section-title">საქართველოს რეგიონები & მიმართულებები</h2>
+            <p className="section-desc">გაეცანით საქართველოს ულამაზეს კუთხეებს — მიიტანეთ კურსორი სასურველ რეგიონზე დეტალების სანახავად</p>
             <div className="gold-line"></div>
           </div>
           <div className="map-wrap">

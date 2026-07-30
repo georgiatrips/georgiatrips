@@ -48,7 +48,7 @@ export default function TourDetailPage() {
   const [lightboxImgIndex, setLightboxImgIndex] = useState(null);
 
   // Mobile Sticky Booking Bar Observer State
-  const [showMobileStickyBtn, setShowMobileStickyBtn] = useState(true);
+  const [showMobileStickyBtn, setShowMobileStickyBtn] = useState(false);
   const bookingSidebarRef = useRef(null);
 
   // Auto-select nearest available date from today if not manually selected
@@ -70,9 +70,8 @@ export default function TourDetailPage() {
           let target = new Date(currentYear, month, day);
           target.setHours(0, 0, 0, 0);
 
-          if (target < now) {
-            target = new Date(currentYear + 1, month, day);
-            target.setHours(0, 0, 0, 0);
+          if (target <= now) {
+            continue;
           }
 
           const diff = target.getTime() - now.getTime();
@@ -98,18 +97,30 @@ export default function TourDetailPage() {
 
   useEffect(() => {
     const sidebarElem = bookingSidebarRef.current;
-    if (!sidebarElem) return;
+    let isSidebarIntersecting = false;
+
+    const checkStickyVisibility = () => {
+      const isScrolledDown = window.scrollY > 100;
+      setShowMobileStickyBtn(isScrolledDown && !isSidebarIntersecting);
+    };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Hide sticky floating button when booking form is visible in viewport
-        setShowMobileStickyBtn(!entry.isIntersecting);
+        isSidebarIntersecting = entry.isIntersecting;
+        checkStickyVisibility();
       },
       { threshold: 0.15 }
     );
 
-    observer.observe(sidebarElem);
-    return () => observer.disconnect();
+    if (sidebarElem) observer.observe(sidebarElem);
+    window.addEventListener("scroll", checkStickyVisibility, { passive: true });
+    checkStickyVisibility();
+
+    return () => {
+      if (sidebarElem) observer.unobserve(sidebarElem);
+      window.removeEventListener("scroll", checkStickyVisibility);
+      observer.disconnect();
+    };
   }, []);
 
   const scrollToBooking = () => {
@@ -134,7 +145,8 @@ export default function TourDetailPage() {
     const monthIndex = parseInt(mm, 10) - 1;
     const day = parseInt(dd, 10);
     let target = new Date(now.getFullYear(), monthIndex, day);
-    if (target < now) target = new Date(now.getFullYear() + 1, monthIndex, day);
+    target.setHours(0, 0, 0, 0);
+    if (target <= now) return "";
     const yyyy = target.getFullYear();
     return `${yyyy}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   };
@@ -547,10 +559,7 @@ export default function TourDetailPage() {
                   )}
                 </div>
 
-                <div className="price-notes-strip">
-                  <span>💳 გადახდა გამგზავრებისას (ნაღდი / გადარიცხვა)</span>
-                  <small>$1 ≈ 2.70 GEL (ქართული ლარი)</small>
-                </div>
+
               </div>
 
 
@@ -630,10 +639,7 @@ export default function TourDetailPage() {
                 </div>
 
                 <button type="submit" className="btn-tdp-submit">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.762.459 3.481 1.332 5.001L2 22l5.127-1.336A9.957 9.957 0 0012.012 22c5.505 0 9.988-4.478 9.989-9.984 0-5.507-4.483-9.984-9.989-9.984zm5.823 14.123c-.244.686-1.42 1.31-1.96 1.365-.497.05-1.144.225-3.805-.826-3.23-1.275-5.3-4.571-5.46-4.786-.16-.215-1.303-1.734-1.303-3.308 0-1.574.823-2.35 1.116-2.671.244-.268.647-.384.864-.384.215 0 .43.003.616.012.196.01.463-.075.725.553.268.64.912 2.222.991 2.383.08.16.133.35.026.564-.106.214-.16.348-.32.537-.16.188-.337.42-.48.563-.16.16-.327.334-.141.653.187.32.83 1.371 1.782 2.22 1.222 1.09 2.25 1.427 2.57 1.587.32.16.508.134.695-.08.187-.215.8-0.934 1.015-1.255.215-.32.43-.267.725-.16.294.107 1.868.882 2.188 1.042.32.16.534.241.614.375.08.134.08.777-.164 1.463z"/>
-                  </svg>
-                  <span>დაჯავშნა WhatsApp-ით</span>
+                  <span>დაჯავშნა</span>
                 </button>
               </form>
 

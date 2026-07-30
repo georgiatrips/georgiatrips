@@ -12340,11 +12340,12 @@ body > .dp-popover,
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  touch-action: manipulation;
 }
 
 .tdp-zigzag-node-item:hover .tdp-zigzag-dot-btn,
 .tdp-zigzag-node-item.is-active .tdp-zigzag-dot-btn {
-  transform: scale(1.22);
+  transform: scale(1.12);
   box-shadow: 0 6px 20px rgba(250, 180, 24, 0.6);
   background: linear-gradient(135deg, #fab418 0%, #f59e0b 100%);
 }
@@ -12366,11 +12367,21 @@ body > .dp-popover,
   border-radius: 50%;
   background: rgba(41, 178, 183, 0.25);
   transition: transform 0.3s ease;
+  touch-action: manipulation;
 }
 
 .tdp-zigzag-node-item:hover .zigzag-dot-ring {
-  transform: scale(1.35);
+  transform: scale(1.15);
   background: rgba(250, 180, 24, 0.35);
+}
+
+@media (max-width: 768px) {
+  .tdp-zigzag-node-item:hover .tdp-zigzag-dot-btn,
+  .tdp-zigzag-node-item.is-active .tdp-zigzag-dot-btn,
+  .tdp-zigzag-node-item:hover .zigzag-dot-ring,
+  .tdp-zigzag-node-item:hover .tdp-zigzag-label {
+    transform: none !important;
+  }
 }
 
 .tdp-zigzag-label {
@@ -12929,10 +12940,10 @@ body > .dp-popover,
   font-size: 1.05rem;
   font-weight: 800;
   color: #ffffff;
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  background: linear-gradient(135deg, #0d233a 0%, #106da4 100%);
   border: none;
   border-radius: 14px;
-  box-shadow: 0 6px 22px rgba(37, 211, 102, 0.35);
+  box-shadow: 0 6px 22px rgba(16, 109, 164, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12946,8 +12957,8 @@ body > .dp-popover,
 
 .btn-tdp-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(37, 211, 102, 0.5);
-  background: linear-gradient(135deg, #28e16d 0%, #0f7a6e 100%);
+  box-shadow: 0 10px 28px rgba(16, 109, 164, 0.45);
+  background: linear-gradient(135deg, #106da4 0%, #29b2b7 100%);
 }
 
 .btn-tdp-submit:active {
@@ -14458,5 +14469,978 @@ body > .dp-popover,
     width: 100%;
   }
 }
+
+/* ============================================================
+   TRANSFERS & VEHICLE FLEET PAGE STYLES
+   ============================================================ */
+
+.transfers-page-wrapper {
+  background: var(--bg-main);
+  min-height: 100vh;
+}
+
+/* Transfers Hero */
+.transfers-hero {
+  position: relative;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 1.5rem 60px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.transfers-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.transfers-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 17, 30, 0.88) 0%, rgba(13, 35, 58, 0.92) 100%);
+  z-index: 1;
+}
+
+.transfers-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.transfers-hero-badge {
+  display: inline-block;
+  background: rgba(250, 180, 24, 0.18);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  margin-bottom: 1.25rem;
+}
+
+.transfers-hero-title {
+  font-family: var(--font-head);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+
+.transfers-hero-sub {
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  max-width: 680px;
+  margin-bottom: 2rem;
+}
+
+.transfers-hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.th-pill {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.45rem 1rem;
+  border-radius: 50px;
+  backdrop-filter: blur(8px);
+}
+
+/* Fleet Cards Grid */
+.transfers-fleet-section {
+  background: #ffffff;
+  padding: 5rem 1.5rem;
+}
+
+.fleet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.fleet-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.fleet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
+  border-color: #cbd5e1;
+}
+
+.fleet-card-media {
+  position: relative;
+  height: 210px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.fleet-card-img {
+  max-height: 170px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.4s ease;
+}
+
+.fleet-card:hover .fleet-card-img {
+  transform: scale(1.06);
+}
+
+.fleet-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: #0d233a;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+}
+
+.fleet-pax-tag {
+  position: absolute;
+  bottom: 0.85rem;
+  right: 1rem;
+  background: rgba(16, 109, 164, 0.9);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 50px;
+  backdrop-filter: blur(4px);
+}
+
+.fleet-card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.fleet-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.fleet-card-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.fleet-card-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+  display: block;
+}
+
+.fleet-card-price {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #106da4;
+  white-space: nowrap;
+}
+
+.fleet-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.fleet-features-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.feat-check {
+  color: #10b981;
+  font-weight: 900;
+}
+
+.btn-fleet-book {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  background: linear-gradient(135deg, #0d233a 0%, #106da4 100%);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(16, 109, 164, 0.25);
+}
+
+.btn-fleet-book:hover {
+  background: linear-gradient(135deg, #106da4 0%, #29b2b7 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 109, 164, 0.4);
+}
+
+/* Airport Transfers Section */
+.transfers-airports-section {
+  background: #f8fafc;
+  padding: 5rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.airports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.airport-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.airport-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+}
+
+.airport-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(16, 109, 164, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.airport-icon {
+  font-size: 1.5rem;
+}
+
+.airport-city-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #106da4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+}
+
+.airport-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.35;
+  margin-bottom: 0.4rem;
+}
+
+.airport-card-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.airport-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+  margin-top: auto;
+}
+
+.airport-price {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.btn-airport-book {
+  padding: 0.55rem 1.1rem;
+  background: #0d233a;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-airport-book:hover {
+  background: #106da4;
+}
+
+/* Private Routes Section */
+.transfers-routes-section {
+  background: #ffffff;
+  padding: 5rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.route-card {
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.25s ease;
+}
+
+.route-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+  transform: translateY(-2px);
+}
+
+.route-cities {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.route-arrow {
+  color: #106da4;
+  font-weight: 900;
+}
+
+.route-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.route-time {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.route-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #106da4;
+}
+
+.btn-route-book {
+  padding: 0.5rem 0.9rem;
+  background: #0d233a;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-route-book:hover {
+  background: #106da4;
+}
+
+/* Booking Form Section */
+.transfers-booking-section {
+  background: #f8fafc;
+  padding: 5rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.transfers-form-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 2.2rem;
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.06);
+}
+
+.transfers-form-header {
+  margin-bottom: 1.8rem;
+  text-align: center;
+}
+
+.transfers-form-header h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.4rem;
+}
+
+.transfers-form-header p {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.transfers-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.tf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+
+.tf-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.tf-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.tf-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-size: 0.92rem;
+  font-family: var(--font-main);
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tf-input:focus {
+  border-color: #106da4;
+  box-shadow: 0 0 0 3px rgba(16, 109, 164, 0.14);
+}
+
+.btn-tf-submit {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d233a 0%, #106da4 100%);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(16, 109, 164, 0.3);
+  margin-top: 0.8rem;
+}
+
+.btn-tf-submit:hover {
+  background: linear-gradient(135deg, #106da4 0%, #29b2b7 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(16, 109, 164, 0.45);
+}
+
+@media (max-width: 768px) {
+  .fleet-grid,
+  .airports-grid,
+  .routes-grid {
+    grid-template-columns: 1fr;
+  }
+  .tf-row {
+    grid-template-columns: 1fr;
+  }
+  .transfers-form-card {
+    padding: 1.5rem;
+  }
+  .route-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .route-meta {
+    align-items: flex-start;
+  }
+}
+
+/* ============================================================
+   FACEBOOK-STYLE SOCIAL POSTS & ARTICLES FEED PAGE STYLES
+   ============================================================ */
+
+.posts-page-wrapper {
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+/* Posts Hero Header */
+.posts-hero {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 1.5rem 50px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.posts-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.posts-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 17, 30, 0.85) 0%, rgba(13, 35, 58, 0.94) 100%);
+  z-index: 1;
+}
+
+.posts-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.posts-hero-eyebrow {
+  display: inline-block;
+  background: rgba(41, 178, 183, 0.18);
+  border: 1px solid var(--teal);
+  color: var(--teal);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  margin-bottom: 1rem;
+}
+
+.posts-hero-title {
+  font-family: var(--font-head);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  margin-bottom: 0.85rem;
+}
+
+.posts-hero-sub {
+  font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  max-width: 660px;
+  margin-bottom: 2rem;
+}
+
+/* Filter Tabs */
+.posts-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.pf-tab {
+  padding: 0.55rem 1.2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(6px);
+}
+
+.pf-tab:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.pf-tab.active {
+  background: #ffffff;
+  color: #0d233a;
+  border-color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Posts Feed Container */
+.posts-feed-section {
+  padding: 3.5rem 1rem 5rem;
+}
+
+.posts-feed-container {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+/* Facebook Post Card */
+.facebook-post-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e4e6eb;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease;
+}
+
+.facebook-post-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Post Header */
+.fb-post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  gap: 1rem;
+}
+
+.fb-author-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fb-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #0d233a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid #eef2f7;
+}
+
+.fb-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.fb-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.fb-author-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #050505;
+}
+
+.fb-verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: #1877f2;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  border-radius: 50%;
+}
+
+.fb-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #65676b;
+  flex-wrap: wrap;
+}
+
+.fb-dot {
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+.fb-public-icon {
+  font-size: 0.78rem;
+}
+
+.fb-location-tag {
+  color: #106da4;
+  font-weight: 600;
+}
+
+.fb-platform-badge {
+  background: #f0f2f5;
+  color: #65676b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  border: 1px solid #e4e6eb;
+}
+
+/* Post Body */
+.fb-post-body {
+  padding: 0.5rem 1.25rem 1rem;
+}
+
+.fb-post-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #050505;
+  margin-bottom: 0.5rem;
+  line-height: 1.35;
+}
+
+.fb-post-text {
+  font-size: 0.95rem;
+  color: #1c1e21;
+  line-height: 1.6;
+  white-space: pre-line;
+  margin-bottom: 0.75rem;
+}
+
+.fb-post-hashtags {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1877f2;
+  line-height: 1.4;
+}
+
+/* Post Media */
+.fb-post-media {
+  position: relative;
+  width: 100%;
+  max-height: 480px;
+  background: #000000;
+  overflow: hidden;
+}
+
+.fb-media-img {
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Reactions Bar */
+.fb-reactions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #ced0d4;
+  font-size: 0.85rem;
+  color: #65676b;
+}
+
+.fb-reactions-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.fb-icon-like, .fb-icon-heart, .fb-icon-fire {
+  font-size: 0.95rem;
+}
+
+.fb-reactions-count {
+  margin-left: 0.35rem;
+  font-weight: 700;
+  color: #050505;
+}
+
+.fb-counts-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+}
+
+/* Action Buttons Bar */
+.fb-action-btns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 0.25rem 0.5rem;
+  background: #ffffff;
+}
+
+.fb-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.3rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #65676b;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.fb-action-btn:hover {
+  background: #f0f2f5;
+  color: #050505;
+}
+
+.fb-action-btn.liked {
+  color: #1877f2;
+}
+
+.fb-book-btn {
+  color: #106da4 !important;
+  font-weight: 800 !important;
+}
+
+.fb-book-btn:hover {
+  background: rgba(16, 109, 164, 0.1) !important;
+}
+
+/* Comments Box */
+.fb-comments-box {
+  padding: 1rem 1.25rem;
+  background: #f7f8fa;
+  border-top: 1px solid #e4e6eb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.fb-comment-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fb-comment-input {
+  flex: 1;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.88rem;
+  font-family: var(--font-main);
+  border: 1px solid #ced0d4;
+  border-radius: 20px;
+  background: #ffffff;
+  outline: none;
+}
+
+.fb-comment-input:focus {
+  border-color: #1877f2;
+}
+
+.fb-comment-submit {
+  padding: 0.6rem 1rem;
+  background: #1877f2;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.fb-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fb-single-comment {
+  background: #ffffff;
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #1c1e21;
+  border: 1px solid #e4e6eb;
+}
+
+.fb-single-comment.user-comment {
+  background: #e7f3ff;
+  border-color: #b8d8ff;
+}
+
+@media (max-width: 640px) {
+  .fb-action-btns {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+  }
+  .fb-action-btn {
+    font-size: 0.78rem;
+    padding: 0.55rem 0.2rem;
+  }
+}
+
 
 

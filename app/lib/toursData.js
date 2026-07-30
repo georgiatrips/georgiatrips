@@ -350,13 +350,34 @@ const GEO_MONTH_NAMES = [
  * groups from the tour's own `dates` array (stored as "MM.DD").
  */
 export function getTourSchedule(tourId) {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const currentYear = now.getFullYear();
+
+  const isUpcomingDate = (dd, mm) => {
+    const day = parseInt(dd, 10);
+    const monthIndex = parseInt(mm, 10) - 1;
+    if (isNaN(day) || isNaN(monthIndex)) return false;
+    const target = new Date(currentYear, monthIndex, day);
+    target.setHours(0, 0, 0, 0);
+    return target > now;
+  };
+
   const curated = ALL_TOURS_SCHEDULE.find((s) => s.id === tourId);
   if (curated) {
-    return curated.months.map((m) => ({
-      monthName: m.monthName,
-      monthIndex: GEO_MONTH_NAMES.indexOf(m.monthName),
-      dates: m.dates
-    }));
+    return curated.months
+      .map((m) => {
+        const filteredDates = m.dates.filter((dStr) => {
+          const [dd, mm] = dStr.split(".");
+          return isUpcomingDate(dd, mm);
+        });
+        return {
+          monthName: m.monthName,
+          monthIndex: GEO_MONTH_NAMES.indexOf(m.monthName),
+          dates: filteredDates
+        };
+      })
+      .filter((mGroup) => mGroup.dates.length > 0);
   }
 
   const tour = ALL_TOURS.find((t) => t.id === tourId);
@@ -365,6 +386,7 @@ export function getTourSchedule(tourId) {
   const grouped = new Map();
   for (const raw of tour.dates) {
     const [mm, dd] = raw.split(".");
+    if (!isUpcomingDate(dd, mm)) continue;
     const monthIndex = parseInt(mm, 10) - 1;
     if (isNaN(monthIndex) || !dd) continue;
     if (!grouped.has(monthIndex)) grouped.set(monthIndex, []);
@@ -377,7 +399,8 @@ export function getTourSchedule(tourId) {
       monthName: GEO_MONTH_NAMES[monthIndex] || "",
       monthIndex,
       dates: dates.sort()
-    }));
+    }))
+    .filter((mGroup) => mGroup.dates.length > 0);
 }
 
 export function getTourDetails(tour) {

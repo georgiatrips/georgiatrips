@@ -47,10 +47,10 @@ export default function Navbar({ active = "home" }) {
 
       {/* Desktop Links */}
       <ul className="nav-links">
-        <li><Link href="/#home">მთავარი</Link></li>
+        <li><Link href="/">მთავარი</Link></li>
         <li><Link href="/tours" className={active === "tours" ? "active" : ""}>ტურები</Link></li>
-        <li><Link href="/#batumi-tours" className={active === "transport" ? "active" : ""}>ტრანსპორტი</Link></li>
-        <li><Link href="/#why" className={active === "posts" ? "active" : ""}>სტატიები</Link></li>
+        <li><Link href="/transfers" className={active === "transfers" || active === "transport" ? "active" : ""}>ტრანსპორტი</Link></li>
+        <li><Link href="/posts" className={active === "posts" || active === "articles" ? "active" : ""}>სტატიები</Link></li>
       </ul>
 
       {/* Right Side Controls */}
@@ -122,10 +122,10 @@ export default function Navbar({ active = "home" }) {
 
       {/* Mobile Navigation Dropdown */}
       <div className={`nav-mobile ${mobileMenuOpen ? "open" : ""}`}>
-        <Link href="/#home" onClick={() => setMobileMenuOpen(false)}>მთავარი</Link>
+        <Link href="/" onClick={() => setMobileMenuOpen(false)}>მთავარი</Link>
         <Link href="/tours" onClick={() => setMobileMenuOpen(false)}>ტურები</Link>
-        <Link href="/#batumi-tours" onClick={() => setMobileMenuOpen(false)}>ტრანსპორტი</Link>
-        <Link href="/#why" onClick={() => setMobileMenuOpen(false)}>სტატიები</Link>
+        <Link href="/transfers" onClick={() => setMobileMenuOpen(false)}>ტრანსპორტი</Link>
+        <Link href="/posts" onClick={() => setMobileMenuOpen(false)}>სტატიები</Link>
         <div className="nav-mobile-controls">
           <div className="nav-mobile-ctrl-row">
             <span>ენა:</span>
