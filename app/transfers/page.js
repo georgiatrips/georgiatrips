@@ -44,8 +44,8 @@ export default function TransfersPage() {
       subtitle: "მძღოლით",
       capacity: "მაქსიმუმ 3 მგზავრი",
       paxNum: 3,
-      img: "/jeep-wrangler.png",
-      fallbackImg: "/jeep-wrangler.png",
+      img: "3car.webp",
+      fallbackImg: "/car3.png",
       badge: "სათავგადასავლო"
     },
     {
@@ -64,19 +64,19 @@ export default function TransfersPage() {
     {
       city: "თბილისი",
       title: "თბილისის აეროპორტი (TBS) ↔ სასტუმრო / ქალაქი",
-      desc: "24/7 დახვედრა აეროპორტში სახელიანი აბრით, ბარგის მიშველება და პირდაპირი კომფორტული ტრანსფერი სასტუმრომდე.",
+      desc: "დაგხვდებით აეროპორტში სახელიანი აბრით, დაგეხმარებით ბარგის გადატანაში და კომფორტულად მიგიყვანთ სასტუმრომდე.",
       icon: "🛫"
     },
     {
       city: "ბათუმი",
       title: "ბათუმის აეროპორტი (BUS) ↔ სასტუმრო / ქალაქი",
-      desc: "მყისიერი ტრანსფერი ბათუმის აეროპორტიდან ბათუმის, ქობულეთისა და ჩაქვის სასტუმროებამდე.",
+      desc: "ბათუმის აეროპორტიდან მიგიყვანთ ბათუმის, ქობულეთისა და ჩაქვის სასტუმროებში.",
       icon: "🌊"
     },
     {
       city: "ქუთაისი",
       title: "ქუთაისის აეროპორტი (KUT) ↔ სასტუმრო / თბილისი / ბათუმი",
-      desc: "24/7 დახვედრა ქუთაისის საერთაშორისო აეროპორტში და ტრანსფერი ნებისმიერ ქალაქში.",
+      desc: "დაგხვდებით ქუთაისის აეროპორტში დღე-ღამის ნებისმიერ დროს და მიგიყვანთ სასურველ ქალაქში.",
       icon: "✈️"
     }
   ];
@@ -124,7 +124,7 @@ export default function TransfersPage() {
           <span className="transfers-hero-badge">✦ პრემიუმ ავტოპარკი & ტრანსფერები</span>
           <h1 className="transfers-hero-title">კომფორტული მგზავრობა საქართველოში</h1>
           <p className="transfers-hero-sub">
-            აეროპორტის დახვედრა 24/7 და საქალაქთაშორისო ტრანსფერები — ყველა ავტომობილს ჩვენი პროფესიონალი მძღოლი მართავს და გემსახურებათ მთელი მგზავრობის განმავლობაში.
+            დაგხვდებით აეროპორტში დღე-ღამის ნებისმიერ დროს და წაგიყვანთ საქართველოს ნებისმიერ კუთხეში. ყველა ავტომობილი გამოცდილი მძღოლით.
           </p>
         </div>
       </section>
@@ -135,7 +135,7 @@ export default function TransfersPage() {
           <div className="section-header" style={{ textAlign: "center", marginBottom: "2.5rem" }}>
             <span className="section-eyebrow">ავტოპარკი & მომსახურება</span>
             <h2 className="section-title">აირჩიეთ სასურველი ავტომობილი</h2>
-            <p className="section-desc">ყველა ავტომობილს ჩვენი მძღოლი მართავს და ემსახურება — ეს არ არის მხოლოდ ავტომობილის ქირაობა</p>
+            <p className="section-desc">ყველა ავტომობილი გამოცდილ მძღოლთან ერთად</p>
             <div className="gold-line" />
           </div>
 
@@ -221,8 +221,8 @@ export default function TransfersPage() {
         <div className="container" style={{ maxWidth: "780px" }}>
           <div className="transfers-form-card">
             <div className="transfers-form-header">
-              <h2>ონლაინ ტრანსფერის ჯავშანი</h2>
-              <p>შეავსეთ მონაცემები და მყისიერად გადადით WhatsApp დასტურზე</p>
+              <h2>ტრანსფერის დაჯავშნა</h2>
+              <p>შეავსეთ ფორმა და ჯავშანი პირდაპირ WhatsApp-ში მოგვივა</p>
             </div>
 
             <form onSubmit={handleTransferSubmit} className="transfers-form-grid">
