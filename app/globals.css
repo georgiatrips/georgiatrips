@@ -12344,7 +12344,6 @@ body > .dp-popover,
 
 .tdp-zigzag-node-item:hover .tdp-zigzag-dot-btn,
 .tdp-zigzag-node-item.is-active .tdp-zigzag-dot-btn {
-  transform: scale(1.22);
   box-shadow: 0 6px 20px rgba(250, 180, 24, 0.6);
   background: linear-gradient(135deg, #fab418 0%, #f59e0b 100%);
 }
@@ -12369,31 +12368,7 @@ body > .dp-popover,
 }
 
 .tdp-zigzag-node-item:hover .zigzag-dot-ring {
-  transform: scale(1.35);
   background: rgba(250, 180, 24, 0.35);
-}
-
-/* Prevent zoom/scale on touch devices for zigzag dots */
-@media (hover: none) and (pointer: coarse) {
-  .tdp-zigzag-node-item:hover .tdp-zigzag-dot-btn,
-  .tdp-zigzag-node-item.is-active .tdp-zigzag-dot-btn {
-    transform: none;
-    box-shadow: 0 4px 15px rgba(16, 109, 164, 0.35);
-    background: linear-gradient(135deg, #106da4 0%, #29b2b7 100%);
-  }
-  .tdp-zigzag-node-item:hover .zigzag-dot-ring,
-  .tdp-zigzag-node-item.is-active .zigzag-dot-ring {
-    transform: none;
-    background: rgba(41, 178, 183, 0.25);
-  }
-  .tdp-zigzag-node-item:hover .tdp-zigzag-label {
-    transform: none;
-    border-color: var(--border);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  }
-  .tdp-zigzag-node-item:hover .zigzag-dot-num {
-    color: #ffffff;
-  }
 }
 
 .tdp-zigzag-label {
