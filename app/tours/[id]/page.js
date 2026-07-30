@@ -47,8 +47,8 @@ export default function TourDetailPage() {
   // Lightbox State
   const [lightboxImgIndex, setLightboxImgIndex] = useState(null);
 
-  // Mobile Sticky Booking Bar Observer State
-  const [showMobileStickyBtn, setShowMobileStickyBtn] = useState(true);
+  // Mobile Sticky Booking Bar — show after scrolling down from hero, hide when booking sidebar visible
+  const [showMobileStickyBtn, setShowMobileStickyBtn] = useState(false);
   const bookingSidebarRef = useRef(null);
 
   // Auto-select nearest available date from today if not manually selected
@@ -97,19 +97,23 @@ export default function TourDetailPage() {
   }, [tourId]);
 
   useEffect(() => {
-    const sidebarElem = bookingSidebarRef.current;
-    if (!sidebarElem) return;
+    // Show bar only after user scrolls down at least 120px from top,
+    // and hide it when the booking sidebar is visible
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 120;
+      const sidebarElem = bookingSidebarRef.current;
+      if (!sidebarElem) {
+        setShowMobileStickyBtn(scrolled);
+        return;
+      }
+      const rect = sidebarElem.getBoundingClientRect();
+      const sidebarVisible = rect.top < window.innerHeight && rect.bottom > 0;
+      setShowMobileStickyBtn(scrolled && !sidebarVisible);
+    };
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Hide sticky floating button when booking form is visible in viewport
-        setShowMobileStickyBtn(!entry.isIntersecting);
-      },
-      { threshold: 0.15 }
-    );
-
-    observer.observe(sidebarElem);
-    return () => observer.disconnect();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToBooking = () => {
@@ -530,7 +534,7 @@ export default function TourDetailPage() {
                   <div className="price-tier-card group">
                     <div className="tier-info">
                       <strong>ჯგუფური ტური</strong>
-                      <small>ყოველდღიური განრიგი</small>
+                      <small>ყოველდღ���ური განრიგი</small>
                     </div>
                     <div className="tier-amount">{tour.priceGroup}</div>
                   </div>
@@ -547,10 +551,7 @@ export default function TourDetailPage() {
                   )}
                 </div>
 
-                <div className="price-notes-strip">
-                  <span>💳 გადახდა გამგზავრებისას (ნაღდი / გადარიცხვა)</span>
-                  <small>$1 ≈ 2.70 GEL (ქართული ლარი)</small>
-                </div>
+
               </div>
 
 
@@ -630,10 +631,7 @@ export default function TourDetailPage() {
                 </div>
 
                 <button type="submit" className="btn-tdp-submit">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.762.459 3.481 1.332 5.001L2 22l5.127-1.336A9.957 9.957 0 0012.012 22c5.505 0 9.988-4.478 9.989-9.984 0-5.507-4.483-9.984-9.989-9.984zm5.823 14.123c-.244.686-1.42 1.31-1.96 1.365-.497.05-1.144.225-3.805-.826-3.23-1.275-5.3-4.571-5.46-4.786-.16-.215-1.303-1.734-1.303-3.308 0-1.574.823-2.35 1.116-2.671.244-.268.647-.384.864-.384.215 0 .43.003.616.012.196.01.463-.075.725.553.268.64.912 2.222.991 2.383.08.16.133.35.026.564-.106.214-.16.348-.32.537-.16.188-.337.42-.48.563-.16.16-.327.334-.141.653.187.32.83 1.371 1.782 2.22 1.222 1.09 2.25 1.427 2.57 1.587.32.16.508.134.695-.08.187-.215.8-0.934 1.015-1.255.215-.32.43-.267.725-.16.294.107 1.868.882 2.188 1.042.32.16.534.241.614.375.08.134.08.777-.164 1.463z"/>
-                  </svg>
-                  <span>დაჯავშნა WhatsApp-ით</span>
+                  <span>დაჯავშნა</span>
                 </button>
               </form>
 
@@ -647,10 +645,16 @@ export default function TourDetailPage() {
                     rel="noreferrer"
                     className="contact-btn wa"
                   >
-                    <span>💬 WhatsApp</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884zm8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                    </svg>
+                    <span>WhatsApp</span>
                   </a>
-                  <a href={`tel:${WA_NUMBER}`} className="contact-btn phone">
-                    <span>📞 დარეკვა</span>
+                  <a href={TELEGRAM_LINK} target="_blank" rel="noreferrer" className="contact-btn tg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.25.38-.51 1.07-.78 4.18-1.82 6.97-3.02 8.37-3.61 3.99-1.66 4.82-1.95 5.36-1.96.12 0 .38.03.55.17.14.12.18.28.2.45-.02.07-.02.16-.04.29z"/>
+                    </svg>
+                    <span>Telegram</span>
                   </a>
                 </div>
               </div>

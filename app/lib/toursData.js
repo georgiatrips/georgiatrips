@@ -164,7 +164,7 @@ export const ALL_TOURS = [
   {
     id: "heli-caucasus",
     title: "კავკასიონის ვერტმფრენის ტური",
-    desc: "კავკასიის მწვერვალებ�� და მიუწვდომელი ხეობები ჩიტის ფრენის სიმაღლიდან.",
+    desc: "კავკასიის მწვერვალებ��� და მიუწვდომელი ხეობები ჩიტის ფრენის სიმაღლიდან.",
     duration: "4 საათი",
     durationHours: 4,
     type: "oneday",
@@ -295,8 +295,8 @@ export const ALL_TOURS_SCHEDULE = [
     title: "პრომეთეს მღვიმე, მარტვილის კანიონი, მარანი და ცხელი წყლები",
     priceGroup: "100 ₾ / კაცი + შესასვლელი ბილეთები",
     priceNote: "ფასდაკლება ბავშვებისთვის",
-    locationShort: "ბათუმიდან, ჩაქვიდან, ქობულეთიდან. ბანაობა თერმ���ლ წყაროებში",
-    desc: "პრომეთეს მღვიმის სტალაქტიტები, ნავით გასეირნება მარტვილში და თერმ��ლი წყლები.",
+    locationShort: "ბათუმიდან, ჩაქვიდან, ქობულეთიდან. ბანაობა თერ������ლ წყაროებში",
+    desc: "პრომეთეს მღვიმის სტალაქტიტები, ნავით გასეირნება მარტვილში და თ��რმ��ლი წყლები.",
     months: [
       { monthName: "ივლისი", dates: ["28.07", "31.07"] },
       { monthName: "აგვისტო", dates: ["02.08", "04.08", "06.08", "09.08", "11.08", "13.08", "16.08", "18.08", "20.08", "21.08", "23.08", "25.08", "28.08", "30.08"] },
@@ -349,14 +349,30 @@ const GEO_MONTH_NAMES = [
  * Prefers the curated ALL_TOURS_SCHEDULE entry; otherwise builds the
  * groups from the tour's own `dates` array (stored as "MM.DD").
  */
+/**
+ * Returns true if a "DD.MM" chip date (this year) is today or in the past.
+ */
+export function isChipPast(chip) {
+  const parts = String(chip).split(".");
+  if (parts.length !== 2) return false;
+  const dd = parseInt(parts[0], 10);
+  const mm = parseInt(parts[1], 10) - 1;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const d = new Date(now.getFullYear(), mm, dd);
+  return d < now;
+}
+
 export function getTourSchedule(tourId) {
   const curated = ALL_TOURS_SCHEDULE.find((s) => s.id === tourId);
   if (curated) {
-    return curated.months.map((m) => ({
-      monthName: m.monthName,
-      monthIndex: GEO_MONTH_NAMES.indexOf(m.monthName),
-      dates: m.dates
-    }));
+    return curated.months
+      .map((m) => ({
+        monthName: m.monthName,
+        monthIndex: GEO_MONTH_NAMES.indexOf(m.monthName),
+        dates: m.dates.filter((d) => !isChipPast(d))
+      }))
+      .filter((m) => m.dates.length > 0);
   }
 
   const tour = ALL_TOURS.find((t) => t.id === tourId);
@@ -367,8 +383,10 @@ export function getTourSchedule(tourId) {
     const [mm, dd] = raw.split(".");
     const monthIndex = parseInt(mm, 10) - 1;
     if (isNaN(monthIndex) || !dd) continue;
+    const chip = `${dd}.${mm}`;
+    if (isChipPast(chip)) continue;
     if (!grouped.has(monthIndex)) grouped.set(monthIndex, []);
-    grouped.get(monthIndex).push(`${dd}.${mm}`);
+    grouped.get(monthIndex).push(chip);
   }
 
   return Array.from(grouped.entries())
@@ -377,7 +395,8 @@ export function getTourSchedule(tourId) {
       monthName: GEO_MONTH_NAMES[monthIndex] || "",
       monthIndex,
       dates: dates.sort()
-    }));
+    }))
+    .filter((m) => m.dates.length > 0);
 }
 
 export function getTourDetails(tour) {
@@ -485,7 +504,7 @@ export function getTourDetails(tour) {
       itinerary: [
         { title: "ჟინვალის წყალსაცავი & ანანურის ციხე", desc: "ფოტო-პაუზა ჟინვალზე და XVII საუკუნის ციხესიმაგრე.", img: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80" },
         { title: "გუდაურის პანორამული მონუმენტი", desc: "ხალხთა მეგობრობის მონუმენტი 2200მ სიმაღლეზე.", img: "/gudauri.png" },
-        { title: "გერგეთის სამების ტაძარი", desc: "4x4 დელიკებით ასვლა 2170მ-ზე მყინვარწვერის ხედით.", img: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80" },
+        { title: "გერგეთის სამების ტაძარი", desc: "4x4 დელიკებით ასვლა 2170მ-ზე მყინვარწვერის ხედი��.", img: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80" },
         { title: "სადილი ფასანაურში", desc: "ნამდვილი მთის ხინკლის დაგემოვნება.", img: "https://images.unsplash.com/photo-1540202404-d0c7fe46a087?w=800&q=80" }
       ],
       reviews: [

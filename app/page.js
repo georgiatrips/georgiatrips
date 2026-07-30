@@ -8,7 +8,7 @@ import { MAP_PATHS } from "./mapPaths";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import DatePicker from "./components/DatePicker";
-import { ALL_TOURS, ALL_TOURS_SCHEDULE } from "./lib/toursData";
+import { ALL_TOURS, ALL_TOURS_SCHEDULE, isChipPast } from "./lib/toursData";
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -155,7 +155,7 @@ const CATEGORIES = [
 const SECTIONS_DATA = [
   {
     id: "popular",
-    title: "საქართველოს ტურისტული ადგილები",
+    title: "საქართველოს ტურისტული ად���ილები",
     tours: [
       {
         img: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80",
@@ -1219,37 +1219,48 @@ export default function Home() {
           </div>
 
           <div className="schedule-list-container">
-            {ALL_TOURS_SCHEDULE.map((item) => (
-              <article key={item.id} className="schedule-card-row">
-                <h3 className="schedule-tour-title" onClick={() => handleBookNow(item.title, item.priceGroup)}>
-                  {item.title}
-                </h3>
-                <div className="schedule-tour-price">
-                  <strong>{item.priceGroup}</strong>, <span>{item.priceNote}</span>
-                </div>
-                <p className="schedule-tour-desc">{item.locationShort}. {item.desc}</p>
+            {ALL_TOURS_SCHEDULE.map((item) => {
+              const filteredMonths = item.months
+                .map((mGroup) => ({
+                  ...mGroup,
+                  dates: mGroup.dates.filter((d) => !isChipPast(d))
+                }))
+                .filter((mGroup) => mGroup.dates.length > 0);
 
-                <div className="schedule-months-flex">
-                  {item.months.map((mGroup, mIdx) => (
-                    <div key={mIdx} className="schedule-month-block">
-                      <span className="schedule-month-pill">{mGroup.monthName}</span>
-                      <div className="schedule-days-grid">
-                        {mGroup.dates.map((d, dIdx) => (
-                          <button
-                            key={dIdx}
-                            className="schedule-day-chip"
-                            onClick={() => handleBookNow(`${item.title} (${d})`, item.priceGroup)}
-                            title={`დაჯავშნეთ ${item.title} — ${d}`}
-                          >
-                            {d}
-                          </button>
-                        ))}
+              if (filteredMonths.length === 0) return null;
+
+              return (
+                <article key={item.id} className="schedule-card-row">
+                  <h3 className="schedule-tour-title" onClick={() => handleBookNow(item.title, item.priceGroup)}>
+                    {item.title}
+                  </h3>
+                  <div className="schedule-tour-price">
+                    <strong>{item.priceGroup}</strong>, <span>{item.priceNote}</span>
+                  </div>
+                  <p className="schedule-tour-desc">{item.locationShort}. {item.desc}</p>
+
+                  <div className="schedule-months-flex">
+                    {filteredMonths.map((mGroup, mIdx) => (
+                      <div key={mIdx} className="schedule-month-block">
+                        <span className="schedule-month-pill">{mGroup.monthName}</span>
+                        <div className="schedule-days-grid">
+                          {mGroup.dates.map((d, dIdx) => (
+                            <button
+                              key={dIdx}
+                              className="schedule-day-chip"
+                              onClick={() => handleBookNow(`${item.title} (${d})`, item.priceGroup)}
+                              title={`დაჯავშნეთ ${item.title} — ${d}`}
+                            >
+                              {d}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
+                    ))}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -1263,7 +1274,7 @@ export default function Home() {
               ტრანსპორტი & <span className="teal-accent">ტრანსფერები</span>
             </h2>
             <div className="transport-minimal-line">
-              <span>🚗 სედანი, მინივენი & SUV</span>
+              <span>🚗 სედანი, მინივენ�� & SUV</span>
               <span className="trans-dot">•</span>
               <span>🛫 აეროპ���რტის დახვედრა 24/7</span>
               <span className="trans-dot">•</span>
@@ -1472,7 +1483,7 @@ export default function Home() {
         <div className="section-inner">
           <div className="section-header">
             <span className="section-eyebrow">ინტერაქტიური რუკა</span>
-            <h2 className="section-title">საქართველოს რეგიონები</h2>
+            <h2 className="section-title">საქართველო��� რეგიონები</h2>
             <p className="section-desc">გაეცანი საქართველოს ყველა კუთხეს — გადაიტანე კურსორი რეგიონზე</p>
             <div className="gold-line"></div>
           </div>

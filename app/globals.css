@@ -12373,6 +12373,29 @@ body > .dp-popover,
   background: rgba(250, 180, 24, 0.35);
 }
 
+/* Prevent zoom/scale on touch devices for zigzag dots */
+@media (hover: none) and (pointer: coarse) {
+  .tdp-zigzag-node-item:hover .tdp-zigzag-dot-btn,
+  .tdp-zigzag-node-item.is-active .tdp-zigzag-dot-btn {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(16, 109, 164, 0.35);
+    background: linear-gradient(135deg, #106da4 0%, #29b2b7 100%);
+  }
+  .tdp-zigzag-node-item:hover .zigzag-dot-ring,
+  .tdp-zigzag-node-item.is-active .zigzag-dot-ring {
+    transform: none;
+    background: rgba(41, 178, 183, 0.25);
+  }
+  .tdp-zigzag-node-item:hover .tdp-zigzag-label {
+    transform: none;
+    border-color: var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .tdp-zigzag-node-item:hover .zigzag-dot-num {
+    color: #ffffff;
+  }
+}
+
 .tdp-zigzag-label {
   background: rgba(255, 255, 255, 0.95);
   padding: 0.4rem 0.85rem;
@@ -12929,10 +12952,10 @@ body > .dp-popover,
   font-size: 1.05rem;
   font-weight: 800;
   color: #ffffff;
-  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  background: #0d233a;
   border: none;
   border-radius: 14px;
-  box-shadow: 0 6px 22px rgba(37, 211, 102, 0.35);
+  box-shadow: 0 6px 22px rgba(13, 35, 58, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12941,13 +12964,13 @@ body > .dp-popover,
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 0.75rem;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
 }
 
 .btn-tdp-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(37, 211, 102, 0.5);
-  background: linear-gradient(135deg, #28e16d 0%, #0f7a6e 100%);
+  box-shadow: 0 10px 28px rgba(13, 35, 58, 0.45);
+  background: #162f52;
 }
 
 .btn-tdp-submit:active {
@@ -12996,8 +13019,18 @@ body > .dp-popover,
   color: var(--text-dark);
 }
 
+.contact-btn.tg {
+  background: #229ed9;
+  color: #ffffff;
+}
+
 .contact-btn:hover {
   transform: translateY(-1px);
+}
+
+.contact-btn svg {
+  margin-right: 0.4rem;
+  flex-shrink: 0;
 }
 
 /* Lightbox Modal */
