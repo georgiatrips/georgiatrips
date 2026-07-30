@@ -26,6 +26,16 @@ export default function TourDetailPage() {
   // Most popular tours (category='popular', excluding current tour)
   const popularTours = (ALL_TOURS || []).filter((t) => t.category === "popular" && t.id !== rawTour?.id);
 
+  // Upcoming free dates for the GROUP tour in "MM.DD" format (DatePicker format),
+  // derived from the tour's schedule (same dates shown in the schedule section)
+  const groupDatesMMDD = tourSchedule.flatMap((mGroup) =>
+    mGroup.dates.map((d) => {
+      const [dd, mm] = String(d).split(".");
+      return `${mm}.${dd}`;
+    })
+  );
+  const hasGroupDates = groupDatesMMDD.length > 0;
+
   // Form State
   const [selectedDate, setSelectedDate] = useState("");
   const [bookingName, setBookingName] = useState("");
@@ -33,6 +43,18 @@ export default function TourDetailPage() {
   const [bookingPeople, setBookingPeople] = useState("2");
   const [messengerPref, setMessengerPref] = useState("WhatsApp");
   const [bookingNotes, setBookingNotes] = useState("");
+  // Tour type: "group" (fixed schedule dates) or "private" (any date)
+  const [tourType, setTourType] = useState(hasGroupDates ? "group" : "private");
+
+  // ---- Price calculation ----
+  const parsePriceNumber = (str) => {
+    const m = String(str || "").replace(/\s/g, "").match(/\d+/);
+    return m ? parseInt(m[0], 10) : 0;
+  };
+  const groupUnitPrice = parsePriceNumber(tour?.priceGroup);
+  const privateTotalPrice = parsePriceNumber(tour?.pricePrivate);
+  const peopleCount = Math.max(1, parseInt(bookingPeople, 10) || 1);
+  const totalPrice = tourType === "group" ? groupUnitPrice * peopleCount : privateTotalPrice;
   
   // Active Itinerary Accordion / Hover Stop state
   const [expandedStep, setExpandedStep] = useState(null);
@@ -51,9 +73,10 @@ export default function TourDetailPage() {
   const [showMobileStickyBtn, setShowMobileStickyBtn] = useState(false);
   const bookingSidebarRef = useRef(null);
 
-  // Auto-select nearest available date from today if not manually selected
+  // Auto-select nearest available date from today if not manually selected.
+  // Only applies to GROUP tours — individual tours can pick any date.
   useEffect(() => {
-    if (tour?.dates && tour.dates.length > 0) {
+    if (tourType === "group" && groupDatesMMDD.length > 0) {
       const findNearestDate = (dates) => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
@@ -88,12 +111,26 @@ export default function TourDetailPage() {
         return `${yyyy}-${mm}-${dd}`;
       };
 
-      const nearest = findNearestDate(tour.dates);
+      const nearest = findNearestDate(groupDatesMMDD);
       if (nearest) {
         setSelectedDate(nearest);
       }
     }
-  }, [tourId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tourId, tourType]);
+
+  // When switching tour type, make sure the selected date is valid for group tours
+  const handleTourTypeChange = (type) => {
+    if (type === "group" && !hasGroupDates) return;
+    setTourType(type);
+    if (type === "group" && selectedDate) {
+      // If currently selected date is not one of the group's free dates, clear it
+      const [, mm, dd] = selectedDate.split("-");
+      if (!groupDatesMMDD.includes(`${mm}.${dd}`)) {
+        setSelectedDate("");
+      }
+    }
+  };
 
   useEffect(() => {
     const sidebarElem = bookingSidebarRef.current;
@@ -154,6 +191,8 @@ export default function TourDetailPage() {
   const pickScheduleDate = (chip) => {
     const iso = scheduleDateToIso(chip);
     if (!iso) return;
+    // Schedule chips are group-tour dates, so switch to group type
+    setTourType("group");
     setSelectedDate(iso);
     scrollToBooking();
   };
@@ -165,13 +204,18 @@ export default function TourDetailPage() {
       `✈️ *GeorgiaTrips — ტურის ჯავშანი*`,
       `━━━━━━━━━━━━━━━━━━`,
       `📍 *ტური:* ${tour.title}`,
+      `🎫 *ტურის ტიპი:* ${tourType === "group" ? "ჯგუფური ტური" : "ინდივიდუალური ტური"}`,
       `📅 *თარიღი:* ${selectedDate || "შეთანხმებით"}`,
       `👤 *სახელი:* ${bookingName.trim() || "მითითებული არ არის"}`,
       `📞 *ტელეფონი:* ${bookingPhone.trim() || "მითითებული არ არის"}`,
       `👥 *მოგზაურთა რაოდენობა:* ${bookingPeople} კაცი`,
       `💬 *კავშირის არხი:* ${messengerPref}`,
-      tour.priceGroup ? `💰 *ჯგუფური:* ${tour.priceGroup}` : "",
-      tour.pricePrivate ? `🚗 *ინდივიდუალური:* ${tour.pricePrivate}` : "",
+      tourType === "group" && groupUnitPrice
+        ? `💰 *ფასი:* ₾${groupUnitPrice} × ${peopleCount} კაცი = *₾${totalPrice}*`
+        : "",
+      tourType === "private" && privateTotalPrice
+        ? `💰 *ფასი:* *₾${totalPrice}* (მთელი ჯგუფისთვის)`
+        : "",
       bookingNotes.trim() ? `📝 *შენიშვნა:* ${bookingNotes.trim()}` : ""
     ].filter(Boolean);
 
@@ -442,7 +486,7 @@ export default function TourDetailPage() {
             </article>
 
             {/* SECTION 4: THIS TOUR'S SCHEDULE & FREE DATES */}
-            {tourSchedule.length > 0 && (
+            {tourSchedule.length > 0 ? (
               <article className="tdp-card-block tdp-schedule-block">
                 <div className="tdp-card-header">
                   <div>
@@ -485,6 +529,30 @@ export default function TourDetailPage() {
                       <i className="legend-dot picked" /> არჩეული თარიღი
                     </span>
                     <span className="legend-note">სხვა თარიღები — ინდივიდუალური ტურით, შეთანხმებით</span>
+                  </div>
+                </div>
+              </article>
+            ) : (
+              <article className="tdp-card-block tdp-schedule-block">
+                <div className="tdp-card-header">
+                  <div>
+                    <h2>ამ ტურის განრიგი & თავისუფალი დღეები</h2>
+                  </div>
+                </div>
+                <div className="tdp-card-body">
+                  <div className="tdp-no-schedule-box">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                      <line x1="9" y1="15" x2="15" y2="19" />
+                      <line x1="15" y1="15" x2="9" y2="19" />
+                    </svg>
+                    <div>
+                      <strong>ამ ტურისთვის ჯგუფური ტური ამჟამად არ არის დაგეგმილი</strong>
+                      <p>თავისუფალი ჯგუფური თარიღები ვერ მოიძებნა. შეგიძლიათ დაჯავშნოთ ინდივიდუალური ტური ნებისმიერ თქვენთვის სასურველ დღეს.</p>
+                    </div>
                   </div>
                 </div>
               </article>
@@ -539,23 +607,34 @@ export default function TourDetailPage() {
                 
                 <div className="price-cards-stack">
                   {/* Group Tour Price */}
-                  <div className="price-tier-card group">
+                  <button
+                    type="button"
+                    className={`price-tier-card group${tourType === "group" ? " is-selected" : ""}${!hasGroupDates ? " is-unavailable" : ""}`}
+                    onClick={() => handleTourTypeChange("group")}
+                    disabled={!hasGroupDates}
+                    aria-pressed={tourType === "group"}
+                  >
                     <div className="tier-info">
                       <strong>ჯგუფური ტური</strong>
-                      <small>ყოველდღიური განრიგი</small>
+                      <small>{hasGroupDates ? "ფიქსირებული განრიგი" : "ამჟამად არ არის დაგეგმილი"}</small>
                     </div>
                     <div className="tier-amount">{tour.priceGroup}</div>
-                  </div>
+                  </button>
 
                   {/* Private Tour Price */}
                   {tour.pricePrivate && (
-                    <div className="price-tier-card private">
+                    <button
+                      type="button"
+                      className={`price-tier-card private${tourType === "private" ? " is-selected" : ""}`}
+                      onClick={() => handleTourTypeChange("private")}
+                      aria-pressed={tourType === "private"}
+                    >
                       <div className="tier-info">
                         <strong>ინდივიდუალური ტური</strong>
                         <small>მხოლოდ თქვენი ჯგუფი</small>
                       </div>
                       <div className="tier-amount">{tour.pricePrivate}</div>
-                    </div>
+                    </button>
                   )}
                 </div>
 
@@ -581,14 +660,49 @@ export default function TourDetailPage() {
                 </div>
 
                 <div className="tdp-form-group">
+                  <label>ტურის ტიპი</label>
+                  <div className="tdp-tour-type-switch" role="radiogroup" aria-label="ტურის ტიპის არჩევა">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={tourType === "group"}
+                      className={`tdp-type-option${tourType === "group" ? " is-active" : ""}${!hasGroupDates ? " is-disabled" : ""}`}
+                      onClick={() => handleTourTypeChange("group")}
+                      disabled={!hasGroupDates}
+                    >
+                      <strong>ჯგუფური</strong>
+                      <small>{groupUnitPrice ? `₾${groupUnitPrice}/კაცი` : "—"}</small>
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={tourType === "private"}
+                      className={`tdp-type-option${tourType === "private" ? " is-active" : ""}`}
+                      onClick={() => handleTourTypeChange("private")}
+                    >
+                      <strong>ინდივიდუალური</strong>
+                      <small>{privateTotalPrice ? `₾${privateTotalPrice} სულ` : "შეთანხმებით"}</small>
+                    </button>
+                  </div>
+                  {!hasGroupDates && (
+                    <p className="tdp-no-group-note">
+                      ამ ტურისთვის ჯგუფური ტური ამჟამად არ არის დაგეგმილი — შესაძლებელია მხოლოდ ინდივიდუალური ტურის დაჯავშნა.
+                    </p>
+                  )}
+                </div>
+
+                <div className="tdp-form-group">
                   <label>გამგზავრების თარიღი</label>
                   <DatePicker
                     value={selectedDate}
                     onChange={(dStr) => setSelectedDate(dStr)}
                     placeholder="აირჩიეთ თარიღი"
                     direction="down"
-                    availableDates={tour.dates || []}
+                    availableDates={tourType === "group" ? groupDatesMMDD : null}
                   />
+                  {tourType === "private" && (
+                    <p className="tdp-type-hint">ინდივიდუალური ტურისთვის ნებისმიერი დღე თავისუფალია</p>
+                  )}
                 </div>
 
                 <div className="tdp-form-group">
@@ -638,8 +752,22 @@ export default function TourDetailPage() {
                   />
                 </div>
 
+                {totalPrice > 0 && (
+                  <div className="tdp-total-price-row">
+                    <div className="total-price-label">
+                      <span>ჯამური ღირებულება</span>
+                      <small>
+                        {tourType === "group"
+                          ? `₾${groupUnitPrice} × ${peopleCount} კაცი`
+                          : "ფიქსირებული ფასი მთელი ჯგუფისთვის"}
+                      </small>
+                    </div>
+                    <strong className="total-price-amount">₾{totalPrice}</strong>
+                  </div>
+                )}
+
                 <button type="submit" className="btn-tdp-submit">
-                  <span>დაჯავშნა</span>
+                  <span>დაჯავშნა{totalPrice > 0 ? ` — ₾${totalPrice}` : ""}</span>
                 </button>
               </form>
 

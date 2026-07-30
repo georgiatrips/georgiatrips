@@ -12900,11 +12900,177 @@ body > .dp-popover,
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.price-tier-card:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.price-tier-card.is-selected {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.price-tier-card.is-unavailable {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .price-tier-card.private {
   background: rgba(250, 180, 24, 0.2);
   border-color: rgba(250, 180, 24, 0.4);
+}
+
+.price-tier-card.private:hover:not(:disabled) {
+  border-color: rgba(250, 180, 24, 0.8);
+}
+
+.price-tier-card.private.is-selected {
+  border-color: #fab418;
+  background: rgba(250, 180, 24, 0.32);
+  box-shadow: 0 0 0 2px rgba(250, 180, 24, 0.45);
+}
+
+/* ---- Tour Type Switch (booking form) ---- */
+.tdp-tour-type-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.tdp-type-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.tdp-type-option strong {
+  font-size: 0.85rem;
+  color: var(--text-dark);
+}
+
+.tdp-type-option small {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.tdp-type-option:hover:not(:disabled) {
+  border-color: #106da4;
+}
+
+.tdp-type-option.is-active {
+  border-color: #106da4;
+  background: #eaf4fa;
+}
+
+.tdp-type-option.is-active strong {
+  color: #0f6194;
+}
+
+.tdp-type-option.is-active small {
+  color: #106da4;
+}
+
+.tdp-type-option.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tdp-no-group-note {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+}
+
+.tdp-type-hint {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+/* ---- Total Price Row ---- */
+.tdp-total-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  margin-bottom: 0.9rem;
+}
+
+.total-price-label span {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.total-price-label small {
+  display: block;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.total-price-amount {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f6194;
+  white-space: nowrap;
+}
+
+/* ---- No Group Schedule Message ---- */
+.tdp-no-schedule-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1.1rem 1.2rem;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+}
+
+.tdp-no-schedule-box svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.tdp-no-schedule-box strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #92400e;
+  margin-bottom: 0.25rem;
+}
+
+.tdp-no-schedule-box p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #b45309;
+  margin: 0;
 }
 
 .tier-info strong {

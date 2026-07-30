@@ -256,7 +256,10 @@ export default function DatePicker({
               const tObj = { day: today.getDate(), month: today.getMonth(), year: today.getFullYear() };
               setViewYear(tObj.year);
               setViewMonth(tObj.month);
-              selectDay(tObj);
+              // Only select today if it is an available (free) date and not disabled
+              if (!isDisabled(tObj)) {
+                selectDay(tObj);
+              }
             }}>
               დღეს
             </button>
