@@ -182,6 +182,34 @@ export default function Navbar({ active = "home" }) {
             ))}
           </div>
         </div>
+        {user ? (
+          <div className="nav-mobile-user">
+            <div className="nav-mobile-user-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>{displayName}</span>
+            </div>
+            <div className="nav-mobile-user-actions">
+              <Link href="/login" className="nav-mobile-user-btn" onClick={() => setMobileMenuOpen(false)}>
+                პროფილი
+              </Link>
+              <button
+                className="nav-mobile-user-btn nav-mobile-logout"
+                onClick={async () => { await logOut?.(); setMobileMenuOpen(false); router.push("/"); }}
+              >
+                გასვლა
+              </button>
+            </div>
+          </div>
+        ) : (
+          <Link href="/login" className="nav-mobile-login" onClick={() => setMobileMenuOpen(false)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+            </svg>
+            შესვლა / რეგისტრაცია
+          </Link>
+        )}
         <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
           <WhatsAppIcon /> WhatsApp-ზე მოგვწერეთ
         </a>
