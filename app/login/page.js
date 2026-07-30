@@ -628,13 +628,122 @@ export default function LoginPage() {
         }
 
         /* ── Responsive ── */
-        @media (max-width: 500px) {
-          .login-card {
-            padding: 2rem 1.25rem;
-            border-radius: 20px;
+        @media (max-width: 600px) {
+          .login-page-wrap {
+            padding: 5rem 0.75rem 3rem;
+            align-items: flex-start;
+            min-height: 100dvh;
           }
+
+          .login-card {
+            padding: 1.75rem 1.1rem 2rem;
+            border-radius: 18px;
+            max-width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+          }
+
+          .lp-logo {
+            width: 58px;
+            height: 58px;
+            margin-bottom: 1.1rem;
+          }
+
           .lp-title {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
+            margin-bottom: 0.4rem;
+          }
+
+          .lp-subtitle {
+            font-size: 0.82rem;
+            margin-bottom: 1.2rem;
+          }
+
+          .lp-tabs {
+            margin-bottom: 1.2rem;
+          }
+
+          .lp-tab {
+            font-size: 0.8rem;
+            padding: 0.55rem 0.75rem;
+          }
+
+          .lp-social-btn {
+            font-size: 0.82rem;
+            padding: 0.72rem 1rem;
+            gap: 8px;
+          }
+
+          .lp-divider {
+            margin: 0.85rem 0;
+            font-size: 0.75rem;
+          }
+
+          .lp-field {
+            margin-bottom: 0.75rem;
+          }
+
+          .lp-field label {
+            font-size: 0.75rem;
+          }
+
+          .lp-field input {
+            padding: 0.72rem 0.875rem;
+            font-size: 0.88rem;
+            border-radius: 10px;
+          }
+
+          .lp-btn-primary {
+            padding: 0.78rem 1.25rem;
+            font-size: 0.88rem;
+          }
+
+          .lp-forgot {
+            margin-top: 0.7rem;
+          }
+
+          .lp-forgot button {
+            font-size: 0.78rem;
+          }
+
+          .lp-footer-note {
+            font-size: 0.7rem;
+            margin-top: 1.1rem;
+            padding-top: 1rem;
+          }
+
+          .lp-alert {
+            font-size: 0.8rem;
+            padding: 0.65rem 0.85rem;
+          }
+
+          /* Profile view on mobile */
+          .lp-avatar {
+            width: 68px;
+            height: 68px;
+          }
+
+          .lp-username {
+            font-size: 1.1rem;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .login-page-wrap {
+            padding: 4.5rem 0.5rem 2.5rem;
+          }
+
+          .login-card {
+            padding: 1.5rem 0.9rem 1.75rem;
+            border-radius: 14px;
+          }
+
+          .lp-title {
+            font-size: 1.15rem;
+          }
+
+          .lp-social-btn {
+            font-size: 0.78rem;
+            padding: 0.65rem 0.75rem;
           }
         }
       `}</style>

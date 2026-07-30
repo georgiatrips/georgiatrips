@@ -13,7 +13,7 @@ export default function Footer() {
               <BrandLogo />
               Georgia<span style={{ color: "var(--teal)" }}>Trips</span>
             </div>
-            <p>პრემიუმ ტურები საქართველოში — ყველა ტიპის მოგზაურისთვის. კომფორტი, ფუფუნება, ემოცია.</p>
+            <p>ბათუმიდან — პრემიუმ ტურები, ტრანსფერები და სასტუმრო პაკეტები. ჩვენ ვქმნით დაუვიწყარ მოგზაურობებს საქართველოში.</p>
             <div className="footer-socials">
               <a href={INSTAGRAM_LINK} target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
                 <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="16" height="16">
@@ -68,11 +68,11 @@ export default function Footer() {
             </div>
             <div className="footer-contact-item">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-              info@georgiatrips.ge
+              infogeorgiatrips@gmail.com
             </div>
             <div className="footer-contact-item">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-              თბილისი, საქართველო
+              ბათუმი, ქუთაისის 27
             </div>
             <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="footer-wa-btn">
               <WhatsAppIcon />
