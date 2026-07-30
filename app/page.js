@@ -1,30 +1,33 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { MAP_PATHS } from "./mapPaths";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import DatePicker from "./components/DatePicker";
+import { ALL_TOURS, ALL_TOURS_SCHEDULE } from "./lib/toursData";
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
 // ============================================================
 // CONFIG & STATIC DATA
 // ============================================================
-const WA_NUMBER = "995555000000"; // Change to real WhatsApp number
+const WA_NUMBER = "995504220020";
 const WA_LINK = `https://wa.me/${WA_NUMBER}`;
 
 const IMAGES = {
-  hero:     "/hero.png",
-  tbilisi:  "/tbilisi.png",
-  batumi:   "/batumi.png",
-  kakheti:  "/kakheti.png",
-  mestia:   "/mestia.png",
-  villa:    "/villa.png",
-  kazbegi:  "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80",
-  heli:     "https://images.unsplash.com/photo-1601976903559-a0aadc42f8f0?w=800&q=80",
-  family:   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80",
+  hero: "/hero.png",
+  tbilisi: "/tbilisi.png",
+  batumi: "/batumi.png",
+  kakheti: "/kakheti.png",
+  mestia: "/mestia.png",
+  villa: "/villa.png",
+  kazbegi: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80",
+  heli: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
+  family: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80",
   gallery1: "https://images.unsplash.com/photo-1583484963886-cfe2bff2945f?w=700&q=75",
   gallery2: "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=700&q=75",
   gallery3: "https://images.unsplash.com/photo-1540202404-d0c7fe46a087?w=700&q=75",
@@ -128,138 +131,223 @@ const CountUp = ({ end, suffix = "", duration = 1800 }) => {
 
 const CATEGORIES = [
   {
-    icon: "🏔️",
-    title: "შიდა ტურები",
-    desc: "საქართველოს ყველა კუთხე — ყაზბეგიდან ბათუმამდე, სვანეთიდან კახეთამდე.",
+    title: "ტურები საქართველოში",
+    desc: "ყაზბეგი, ბათუმი, სვანეთი, კახეთი.",
+    link: "#popular",
   },
   {
-    icon: "✈️",
-    title: "ტურები საზღვარგარეთ",
-    desc: "ევროპა, აზია, ხმელთაშუა ზღვა — სრული ორგანიზებითა და ექსკლუზიური პირობებით.",
+    title: "სასტუმროები",
+    desc: "პრემიუმ სასტუმროები და რიზორტები.",
+    link: "#hotels",
   },
   {
-    icon: "💎",
-    title: "პრემიუმ & VIP",
-    desc: "კერძო ტურები, VIP ვილები, ვერტმფრენები — მხოლოდ უმაღლესი კლასი.",
+    title: "VIP სერვისი",
+    desc: "ინდივიდუალური ტურები და ვილები.",
+    link: "#booking",
   },
   {
-    icon: "🚗",
     title: "ტრანსფერები",
-    desc: "კომფორტული გადაადგილება ნებისმიერ მიმართულებით — 24/7, პრემიუმ ავტომობილებით.",
+    desc: "კომფორტული ტრანსპორტი 24/7.",
+    link: "#booking",
   },
 ];
 
-const BATUMI_TOURS = [
+const SECTIONS_DATA = [
   {
-    img: IMAGES.batumi,
-    badge: "მთიანი აჭარა",
-    price: "₾120-დან",
-    title: "ხულო, მწვანე ტბა და გოდერძი",
-    desc: "აღმოაჩინეთ მაღალმთიანი აჭარის საოცრებები — გასეირნება საბაგიროთი ხულოში, მწვანე ტბის ალპური სილამაზე და გოდერძის უღელტეხილი.",
-    duration: "1 დღე",
-    people: "2-10 კაცი",
+    id: "popular",
+    title: "საქართველოს ტურისტული ადგილები",
+    tours: [
+      {
+        img: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80",
+        badge: "TOP 1 პოპულარული",
+        priceGroup: "₾100/კაცი",
+        pricePrivate: "₾500",
+        dates: ["07.28", "07.31", "08.02"],
+        title: "პრომეთეს მღვიმე, მარტვილის კანიონი & ცხელი წყლები",
+        desc: "პრომეთეს მღვიმის საოცარი სტალაქტიტები, ნავით გასეირნება მარტვილში და თერმული წყლები.",
+        duration: "14 საათი",
+        location: "📍 ბათუმი, ჩაქვი, ქობულეთი",
+      },
+      {
+        img: IMAGES.batumi,
+        badge: "TOP 2 პოპულარული",
+        priceGroup: "₾80/კაცი",
+        pricePrivate: "₾400",
+        dates: ["07.28", "07.29", "08.01"],
+        title: "მთიანი აჭარის სრული ტური 1 დღეში",
+        desc: "მახუნცეთის ჩანჩქერი, თამარის ისტორიული ხიდი, მირვეთის ხეობა და ქართული ტრადიციული სუფრა.",
+        duration: "10 საათი",
+        location: "📍 ბათუმიდან",
+      },
+    ],
   },
   {
-    img: IMAGES.villa,
-    badge: "ეთნო ტური",
-    price: "₾90-დან",
-    title: "მაჭახელას ხეობა და აჭარული სუფრა",
-    desc: "ისტორიული ხიდები, ჩანჩქერები, იარაღის მუზეუმი და ნამდვილი აჭარული სუფრა ფოლკლორული შოუთი და ცეკვებით ადგილობრივ ოჯახში.",
-    duration: "1 დღე",
-    people: "4-15 კაცი",
+    id: "nature",
+    title: "მთიანი აჭარა",
+    tours: [
+      {
+        img: IMAGES.kazbegi,
+        badge: "მთის ჰაერი",
+        priceGroup: "₾170/კაცი",
+        pricePrivate: "₾500",
+        dates: ["07.27", "07.28", "07.30"],
+        title: "ყაზბეგის მთები & გერგეთი",
+        desc: "გერგეთის სამება, ულამაზესი ხედი მყინვარწვერზე და დაუვიწყარი ალპური ხეობები.",
+        duration: "10 საათი",
+        location: "📍 ბათუმი, თბილისი",
+      },
+      {
+        img: "https://images.unsplash.com/photo-1540202404-d0c7fe46a087?w=700&q=75",
+        badge: "ეკო ტური",
+        priceGroup: "₾80/კაცი",
+        pricePrivate: "₾250",
+        dates: ["07.28", "07.30", "08.01"],
+        title: "მტირალას ეროვნული პარკი",
+        desc: "ევროპის ყველაზე ნოტიო პარკი — ტყის ბილიკები, ზიპლაინი და ტბაზე გასეირნება.",
+        duration: "6 საათი",
+        location: "📍 ბათუმი, ქობულეთი",
+      },
+    ],
   },
   {
-    img: "https://images.unsplash.com/photo-1540202404-d0c7fe46a087?w=700&q=75",
-    badge: "ეკო ტური",
-    price: "₾80-დან",
-    title: "მტირალას ეროვნული პარკი",
-    desc: "მოგზაურობა ევროპის ყველაზე ნოტიო პარკში — ტყის ბილიკები, ზიპლაინი, ტბაზე ნავით გასეირნება და ულამაზესი ხელუხლებელი ბუნება.",
-    duration: "1 დღე",
-    people: "2-12 კაცი",
+    id: "culture",
+    title: "ბათუმის ქალაქის ტური",
+    tours: [
+      {
+        img: IMAGES.tbilisi,
+        badge: "ისტორია & კულტურა",
+        priceGroup: "₾150/კაცი",
+        pricePrivate: "₾450",
+        dates: ["07.27", "07.29", "07.31"],
+        title: "თბილისის ძველი ქალაქი & მცხეთა",
+        desc: "ნარიყალა, სვეტიცხოველი, ჯვრის მონასტერი და ძველი ქალაქის ისტორიული აბანოები.",
+        duration: "8 საათი",
+        location: "📍 თბილისიდან",
+      },
+      {
+        img: IMAGES.mestia,
+        badge: "UNESCO მემკვიდრეობა",
+        priceGroup: "₾350/კაცი",
+        pricePrivate: "₾950",
+        dates: ["07.28", "08.01", "08.05"],
+        title: "მესტიის & უშგულის საიდუმლო",
+        desc: "სვანური კოშკები, უშგულის ავთენტური სოფელი და საუკუნოვანი კულტურა.",
+        duration: "24+ საათი",
+        location: "📍 ზუგდიდი, მესტია",
+      },
+    ],
   },
   {
-    img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=700&q=75",
-    badge: "კულტურა & ბუნება",
-    price: "₾70-დან",
-    title: "ბოტანიკური ბაღი & ციხისძირი",
-    desc: "მწვანე კონცხის ბოტანიკური ბაღი, პეტრას ციხის ისტორიული ნანგრევები და ულამაზესი პანორამული ხედები ზღვაზე ციხისძირიდან.",
-    duration: "1 დღე",
-    people: "2-15 კაცი",
-  }
-];
-
-const TOURS = [
-  {
-    img: IMAGES.tbilisi,
-    badge: "ყველაზე პოპულარული",
-    price: "₾150-დან",
-    title: "თბილისის ქალაქური ტური",
-    desc: "მეტეხიდან ნარიყალამდე — ისტორია, ძველი ქალაქის აბანოები, ქართული სამზარეულო და ულამაზესი ხედები.",
-    duration: "1 დღე",
-    people: "2-12 კაცი",
+    id: "taste",
+    title: "ღვინის პროგრამები",
+    tours: [
+      {
+        img: IMAGES.kakheti,
+        badge: "ღვინის სამშობლო",
+        priceGroup: "₾180/კაცი",
+        pricePrivate: "₾520",
+        dates: ["07.29", "07.31", "08.03"],
+        title: "კახეთის ღვინის მარშრუტი",
+        desc: "სიღნაღი, ბოდბის მონასტერი, ქვევრის ღვინის დეგუსტაცია და ქართული სუფრა.",
+        duration: "10 საათი",
+        location: "📍 თბილისიდან",
+      },
+      {
+        img: IMAGES.villa,
+        badge: "ეთნო გასტრონომია",
+        priceGroup: "₾90/კაცი",
+        pricePrivate: "₾280",
+        dates: ["07.27", "07.29", "07.31"],
+        title: "მაჭახელას ხეობა & აჭარული სუფრა",
+        desc: "ისტორიული ხიდები, ჩანჩქერები, აჭარული ხაჭაპური და ფოლკლორული შოუ.",
+        duration: "7 საათი",
+        location: "📍 ბათუმიდან",
+      },
+    ],
   },
   {
-    img: IMAGES.batumi,
-    badge: "ზღვა და დასვენება",
-    price: "₾200-დან",
-    title: "ბათუმის სანაპირო",
-    desc: "შავი ზღვის სანაპირო, ულამაზესი ბულვარი, ბოტანიკური ბაღი და აჭარული ხაჭაპურის მასტერკლასი.",
-    duration: "2 დღე",
-    people: "2-8 კაცი",
+    id: "adventure",
+    title: "ეგზოტიკური პარკები და ბუნება",
+    tours: [
+      {
+        img: IMAGES.batumi,
+        badge: "ალპური თავგადასავალი",
+        priceGroup: "₾120/კაცი",
+        pricePrivate: "₾350",
+        dates: ["07.27", "07.28", "07.30"],
+        title: "ხულო, მწვანე ტბა & გოდერძი",
+        desc: "საბაგირო ხულოში, მწვანე ტბის ალპური სილამაზე და გოდერძის უღელტეხილი.",
+        duration: "9 საათი",
+        location: "📍 ბათუმი, ხულო",
+      },
+      {
+        img: IMAGES.heli,
+        badge: "ექსტრემალური",
+        priceGroup: "₾1200/კაცი",
+        pricePrivate: "₾3500",
+        dates: ["07.28", "07.30", "08.04"],
+        title: "კავკასიონის ვერტმფრენის ტური",
+        desc: "კავკასიის მწვერვალები და მიუწვდომელი ხეობები ჩიტის ფრენის სიმაღლიდან.",
+        duration: "4 საათი",
+        location: "📍 სტეფანწმინდა",
+      },
+    ],
   },
   {
-    img: IMAGES.kazbegi,
-    badge: "მთის ჰაერი",
-    price: "₾170-დან",
-    title: "ყაზბეგის მთები",
-    desc: "გერგეთის სამება, ულამაზესი ხედი მყინვარწვერზე, დაუვიწყარი ხეობები და ავთენტური მთის ხინკალი.",
-    duration: "1 დღე",
-    people: "2-15 კაცი",
+    id: "luxury",
+    title: "საზღვაო გასეირნება",
+    tours: [
+      {
+        img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
+        badge: "5★ VIP ექსკლუზივი",
+        priceGroup: "₾800/კაცი",
+        pricePrivate: "₾2200",
+        dates: ["07.27", "07.29", "08.02"],
+        title: "VIP ფუფუნების ვილები & რიზორტი",
+        desc: "ექსკლუზიური დასვენება საუკეთესო ვილებში, პირადი მზარეულითა და ასისტენტით.",
+        duration: "48+ საათი",
+        location: "📍 ყაზბეგი, ბათუმი",
+      },
+      {
+        img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=700&q=75",
+        badge: "VIP იახტ ტური",
+        priceGroup: "₾450/კაცი",
+        pricePrivate: "₾1300",
+        dates: ["07.28", "07.31", "08.03"],
+        title: "ბათუმის პრემიუმ სანაპირო & იახტა",
+        desc: "გასეირნება კერძო იახტით შავ ზღვაზე, დელფინების ყურება და მზის ჩასვლა.",
+        duration: "5 საათი",
+        location: "📍 ბათუმის პორტი",
+      },
+    ],
   },
   {
-    img: IMAGES.kakheti,
-    badge: "ღვინის სამშობლო",
-    price: "₾180-დან",
-    title: "კახეთის ღვინის ტური",
-    desc: "სიღნაღი, ბოდბის მონასტერი, ტრადიციული ქვევრის ღვინის დეგუსტაცია და ქართული სუფრა კახურ მარანში.",
-    duration: "1 დღე",
-    people: "2-10 კაცი",
-  },
-  {
-    img: IMAGES.mestia,
-    badge: "საუკუნეების საიდუმლო",
-    price: "₾350-დან",
-    title: "მესტიის თავგადასავალი",
-    desc: "სვანური კოშკები, უშგული — ევროპაში ყველაზე მაღალი დასახლება, უნიკალური კულტურა და მთის მწვერვალები.",
-    duration: "3 დღე",
-    people: "2-6 კაცი",
-  },
-  {
-    img: IMAGES.villa,
-    badge: "VIP ექსკლუზივი",
-    price: "₾800-დან",
-    title: "VIP ფუფუნების ვილები",
-    desc: "ექსკლუზიური დასვენება საქართველოს საუკეთესო კურორტებზე, პერსონალური მზარეულითა და პირადი ასისტენტით.",
-    duration: "3-7 დღე",
-    people: "2-4 კაცი",
-  },
-  {
-    img: IMAGES.heli,
-    badge: "პანორამული ხედები",
-    price: "₾1200-დან",
-    title: "ვერტმფრენის ტურები",
-    desc: "აღმოაჩინეთ კავკასიის მწვერვალები და მიუწვდომელი ხეობები ჩიტის ფრენის სიმაღლიდან.",
-    duration: "ნახევარი დღე",
-    people: "2-4 კაცი",
-  },
-  {
-    img: IMAGES.family,
-    badge: "საოჯახო",
-    price: "₾450-დან",
-    title: "საოჯახო პაკეტი",
-    desc: "სპეციალურად დაგეგმილი მშვიდი მარშრუტები ბავშვებთან ერთად კომფორტული მგზავრობით.",
-    duration: "5 დღე",
-    people: "4-8 კაცი",
+    id: "seasons",
+    title: "სეზონური ექსკურსიები",
+    tours: [
+      {
+        img: HERO_SLIDES[2].image,
+        badge: "სეზონური ჰაილაითი",
+        priceGroup: "₾200/კაცი",
+        pricePrivate: "₾580",
+        dates: ["07.28", "07.29", "07.31"],
+        title: "გუდაურის პანორამული ტური",
+        desc: "პანორამული საბაგიროები, პარაპლანით ფრენა და ალპური პანორამა გუდაურში.",
+        duration: "12 საათი",
+        location: "📍 გუდაური",
+      },
+      {
+        img: IMAGES.family,
+        badge: "საოჯახო პაკეტი",
+        priceGroup: "₾450/კაცი",
+        pricePrivate: "₾1200",
+        dates: ["07.27", "07.28", "07.31"],
+        title: "საოჯახო სეზონური მოგზაურობა",
+        desc: "სპეციალურად დაგეგმილი მშვიდი მარშრუტები ბავშვებთან ერთად კომფორტული მგზავრობით.",
+        duration: "36+ საათი",
+        location: "📍 ბათუმი, აჭარა",
+      },
+    ],
   },
 ];
 
@@ -445,57 +533,57 @@ const WEATHER_DATA = {
 const ICONS = {
   wa: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-      <path d="M12.003 2C6.477 2 2 6.477 2 12c0 1.989.574 3.842 1.563 5.406L2 22l4.682-1.528A9.956 9.956 0 0012.003 22C17.529 22 22 17.523 22 12S17.529 2 12.003 2zm0 18c-1.676 0-3.26-.455-4.627-1.247l-.331-.198-3.454 1.128 1.156-3.366-.215-.348A7.957 7.957 0 014.003 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+      <path d="M12.003 2C6.477 2 2 6.477 2 12c0 1.989.574 3.842 1.563 5.406L2 22l4.682-1.528A9.956 9.956 0 0012.003 22C17.529 22 22 17.523 22 12S17.529 2 12.003 2zm0 18c-1.676 0-3.26-.455-4.627-1.247l-.331-.198-3.454 1.128 1.156-3.366-.215-.348A7.957 7.957 0 014.003 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z" />
     </svg>
   ),
   plane: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 16l-5-5 2-8-6 4-3-3-3 3-3-4 2 8-5 5 8 1z"/>
+      <path d="M21 16l-5-5 2-8-6 4-3-3-3 3-3-4 2 8-5 5 8 1z" />
     </svg>
   ),
   clock: (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
     </svg>
   ),
   people: (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
   arrow: (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   sun: (
     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fab418" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="weather-svg-sun">
-      <circle cx="12" cy="12" r="5" fill="#fab418" fillOpacity="0.1"/>
-      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      <circle cx="12" cy="12" r="5" fill="#fab418" fillOpacity="0.1" />
+      <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
     </svg>
   ),
   "cloud-sun": (
     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41" stroke="#fab418"/>
-      <circle cx="12" cy="12" r="4" stroke="#fab418"/>
-      <path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25" fill="var(--blue)" fillOpacity="0.1" stroke="var(--blue)"/>
-      <path d="M8 16a3 3 0 0 0 3-3H6.5A3 3 0 0 0 8 16z" fill="var(--blue)"/>
+      <path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41" stroke="#fab418" />
+      <circle cx="12" cy="12" r="4" stroke="#fab418" />
+      <path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25" fill="var(--blue)" fillOpacity="0.1" stroke="var(--blue)" />
+      <path d="M8 16a3 3 0 0 0 3-3H6.5A3 3 0 0 0 8 16z" fill="var(--blue)" />
     </svg>
   ),
   rain: (
     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="15" x2="12" y2="23"/><line x1="8" y1="17" x2="8" y2="21"/><line x1="16" y1="17" x2="16" y2="21"/>
-      <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" fill="var(--blue)" fillOpacity="0.1"/>
+      <line x1="12" y1="15" x2="12" y2="23" /><line x1="8" y1="17" x2="8" y2="21" /><line x1="16" y1="17" x2="16" y2="21" />
+      <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" fill="var(--blue)" fillOpacity="0.1" />
     </svg>
   ),
   storm: (
     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" fill="var(--text-mute)" fillOpacity="0.1" stroke="var(--text-mute)"/>
-      <polyline points="13 12 9 17 12 17 10 22" stroke="#fab418" strokeWidth="2.5" fill="#fab418"/>
+      <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25" fill="var(--text-mute)" fillOpacity="0.1" stroke="var(--text-mute)" />
+      <polyline points="13 12 9 17 12 17 10 22" stroke="#fab418" strokeWidth="2.5" fill="#fab418" />
     </svg>
   )
 };
@@ -509,6 +597,45 @@ export default function Home() {
   const [activeMapRegion, setActiveMapRegion] = useState(null);
   const [activeWeatherTab, setActiveWeatherTab] = useState("tbilisi");
   const [openFaq, setOpenFaq] = useState(0);
+
+  const [popTourSlide, setPopTourSlide] = useState(0);
+  const tourPairs = useMemo(() => {
+    const pairs = [];
+    for (let i = 0; i < ALL_TOURS.length; i += 2) {
+      pairs.push(ALL_TOURS.slice(i, i + 2));
+    }
+    return pairs;
+  }, []);
+
+  useEffect(() => {
+    const popTourInterval = setInterval(() => {
+      setPopTourSlide((prev) => (prev + 1) % tourPairs.length);
+    }, 3500);
+    return () => clearInterval(popTourInterval);
+  }, [tourPairs.length]);
+
+  const router = useRouter();
+  const [heroDestination, setHeroDestination] = useState("all");
+  const [heroDate, setHeroDate] = useState("");
+  const [heroFormat, setHeroFormat] = useState("all");
+
+  const allAvailableDates = useMemo(() => {
+    const datesSet = new Set();
+    ALL_TOURS.forEach((t) => {
+      if (t.dates) t.dates.forEach((d) => datesSet.add(d));
+    });
+    return Array.from(datesSet);
+  }, []);
+
+  const handleHeroSearch = (e) => {
+    if (e) e.preventDefault();
+    const params = new URLSearchParams();
+    if (heroDestination && heroDestination !== "all") params.set("destination", heroDestination);
+    if (heroFormat && heroFormat !== "all") params.set("format", heroFormat);
+    if (heroDate) params.set("date", heroDate);
+    const qStr = params.toString();
+    router.push(`/tours${qStr ? `?${qStr}` : ""}`);
+  };
 
   // Live weather — refreshes every 15 min, falls back to static data
   const { data: weatherResp, isLoading: weatherLoading } = useSWR("/api/weather", fetcher, {
@@ -579,6 +706,11 @@ export default function Home() {
     window.open(`${WA_LINK}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
+  const handleTourClick = (tour) => {
+    const id = tour.id || ALL_TOURS.find((t) => t.title === tour.title)?.id || "promethe-martvili";
+    router.push(`/tours/${id}`);
+  };
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
     const { name, country, dateFrom, dateTo, people, budget, notes } = formData;
@@ -605,50 +737,92 @@ export default function Home() {
       {/* ==================== HERO — CINEMATIC ==================== */}
       <section className="hero" id="home">
         {HERO_SLIDES.map((slide, idx) => (
-          <div 
-            key={idx} 
-            className={`hero-bg ${idx === currentHeroSlide ? "loaded active" : ""}`} 
+          <div
+            key={idx}
+            className={`hero-bg ${idx === currentHeroSlide ? "loaded active" : ""}`}
             style={{ backgroundImage: `url('${slide.image}')` }}
           ></div>
         ))}
-        
+
         <div className="hero-content">
           <div className="hero-badge">
             <span>✦</span>
             <span>Georgia Trips — Travel Company</span>
           </div>
-          
+
           <h1 className="hero-title">
-            აღმოაჩინეთ<br/>
+            აღმოაჩინეთ<br />
             <em>საქართველო</em>
           </h1>
 
-          <p className="hero-sub">
-            კავკასიონის მთებიდან შავი ზღვის სანაპირომდე — შექმენით თქვენი
-            დაუვიწყარი მოგზაურობა ჩვენთან ერთად.
-          </p>
-
           <div className="hero-locations">
-            <span className="hero-loc-tag">🏔️ ყაზბეგი</span>
+            <span className="hero-loc-tag">ყაზბეგი</span>
             <span className="hero-loc-divider"></span>
-            <span className="hero-loc-tag">🏖️ ბათუმი</span>
+            <span className="hero-loc-tag">თბილისი</span>
             <span className="hero-loc-divider"></span>
-            <span className="hero-loc-tag">🏛️ თბილისი</span>
+            <span className="hero-loc-tag featured">ბათუმი</span>
             <span className="hero-loc-divider"></span>
-            <span className="hero-loc-tag">🍇 კახეთი</span>
+            <span className="hero-loc-tag">კახეთი</span>
             <span className="hero-loc-divider"></span>
-            <span className="hero-loc-tag">🏔️ სვანეთი</span>
+            <span className="hero-loc-tag">სვანეთი</span>
           </div>
 
-          <div className="hero-buttons">
-            <a href="#booking" className="btn-primary">
-              {ICONS.plane}
-              <span>დაგეგმეთ მოგზაურობა</span>
-            </a>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-              {ICONS.wa}
-              <span>WhatsApp-ზე მოგვწერეთ</span>
-            </a>
+          {/* Minimalist Quick Search Widget */}
+          <div className="hero-search-bar">
+            <div className="hero-search-field">
+              <span className="hero-search-icon">📍</span>
+              <div className="hero-search-input-wrap">
+                <label>მიმართულება</label>
+                <select
+                  className="hero-search-select"
+                  value={heroDestination}
+                  onChange={(e) => setHeroDestination(e.target.value)}
+                >
+                  <option value="all">ყველა რეგიონი</option>
+                  <option value="batumi">ბათუმი</option>
+                  <option value="kazbegi">ყაზბეგი</option>
+                  <option value="tbilisi">თბილისი</option>
+                  <option value="kakheti">კახეთი</option>
+                  <option value="svaneti">სვანეთი</option>
+                  <option value="gudauri">გუდაური</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="hero-search-divider" />
+
+            <div className="hero-search-field">
+              <span className="hero-search-icon">📅</span>
+              <div className="hero-search-input-wrap">
+                <label>თარიღი</label>
+                <DatePicker value={heroDate} onChange={(d) => setHeroDate(d)} availableDates={allAvailableDates} />
+              </div>
+            </div>
+
+            <div className="hero-search-divider" />
+
+            <div className="hero-search-field">
+              <span className="hero-search-icon">👥</span>
+              <div className="hero-search-input-wrap">
+                <label>ტურის ფორმატი</label>
+                <select
+                  className="hero-search-select"
+                  value={heroFormat}
+                  onChange={(e) => setHeroFormat(e.target.value)}
+                >
+                  <option value="all">ყველა ფორმატი</option>
+                  <option value="individual">ინდივიდუალური ტური</option>
+                  <option value="group">ჯგუფური ტური</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="button" onClick={handleHeroSearch} className="hero-search-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              </svg>
+              <span>ძებნა</span>
+            </button>
           </div>
         </div>
 
@@ -669,21 +843,89 @@ export default function Home() {
             />
           ))}
         </div>
-
-        <div className="hero-scroll-hint">
-          <span>გადაახვიე</span>
-        </div>
       </section>
 
-      {/* ==================== STATS BAND ==================== */}
-      <section className="stats-band" aria-label="სტატისტიკა">
-        <div className="stats-grid">
-          {STATS.map((stat, idx) => (
-            <div key={idx} className="stat-item">
-              <CountUp end={stat.value} suffix={stat.suffix} />
-              <span className="stat-label">{stat.label}</span>
+      {/* ==================== ABOUT / INTRO SECTION ==================== */}
+      <section className="about-section" id="about" aria-label="ჩვენ შესახებ">
+        <div className="about-inner">
+
+          {/* Left — Photo */}
+          <div className="about-photo-wrap">
+            <div className="about-photo-frame">
+              <Image
+                src="/profile.png"
+                alt="GeorgiaTrips — პროფესიონალი სამოგზაურო კომპანია საქართველოში"
+                fill
+                style={{ objectFit: "cover", objectPosition: "center 35%" }}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
             </div>
-          ))}
+            <div className="about-photo-accent" aria-hidden="true">GeorgiaTrips</div>
+          </div>
+
+          {/* Right — Text content */}
+          <div className="about-text">
+            <span className="about-eyebrow">გაიცანით GeorgiaTrips</span>
+            <h2 className="about-heading">
+              საქართველოს ტურები —<br />
+              თქვენი სიამოვნება, ჩვენი პასუხისმგებლობა
+            </h2>
+
+            <p className="about-desc">
+              GeorgiaTrips — პროფესიონალი სამოგზაურო კომპანია, რომელიც გთავაზობთ
+              ინდივიდუალურ და ჯგუფურ ტურებს საქართველოს ულამაზეს კუთხეებში: ყაზბეგი,
+              სვანეთი, ბათუმი, კახეთი, თბილისი და სხვა. ჩვენი მიზანია — თითოეულ
+              მოგზაურს შევუქმნათ დაუვიწყარი გამოცდილება.
+            </p>
+            <p className="about-desc">
+              ჩვენი გამოცდილი გიდები, კომფორტული ტრანსპორტი და ყოველი მომსახურება
+              შერჩეულია ისე, რომ სამოგზაურო გეგმის ყველა დეტალი მოქნილი, უსაფრთხო
+              და სასიამოვნო იყოს — დაწყებული ტრანსფერიდან, დამთავრებული ექსკლუზიური
+              VIP პაკეტებამდე.
+            </p>
+
+            <ul className="about-checks" aria-label="ჩვენი უპირატესობები">
+              <li><span className="about-check-icon" aria-hidden="true">✓</span>მრავალწლიანი გამოცდილება ტურისტული მარშრუტების ორგანიზებაში</li>
+              <li><span className="about-check-icon" aria-hidden="true">✓</span>ლიცენზირებული გიდები და პროფესიონალი მძღოლები</li>
+              <li><span className="about-check-icon" aria-hidden="true">✓</span>მოქნილი განრიგი — ინდივიდუალური და ჯგუფური ტურები</li>
+              <li><span className="about-check-icon" aria-hidden="true">✓</span>24/7 მხარდაჭერა მოგზაურობის მთელ პერიოდში</li>
+            </ul>
+
+            <div className="about-socials" aria-label="სოციალური ქსელები">
+              <a
+                href="https://www.facebook.com/people/Georgia-Trips/61588059054976/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="about-social-link about-social-fb"
+                aria-label="Facebook — Georgia Trips"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+                Facebook
+              </a>
+              <a
+                href="https://www.instagram.com/georgiatrips.ge/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="about-social-link about-social-ig"
+                aria-label="Instagram — georgiatrips.ge"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
+                Instagram
+              </a>
+              <a
+                href="https://api.whatsapp.com/send/?phone=995504220020&text&type=phone_number&app_absent=0"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="about-social-link about-social-wa"
+                aria-label="WhatsApp — +995 504 22 00 20"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg>
+                WhatsApp
+              </a>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -693,7 +935,6 @@ export default function Home() {
           <div className="section-header">
             <span className="section-eyebrow">ჩვენი სერვისები</span>
             <h2 className="section-title">მიმართულებები და მომსახურება</h2>
-            <p className="section-desc">საქართველოს ულამაზესი კუთხეები, საზღვარგარეთის ეგზოტიკური ტურები და პრემიუმ კლასის ტრანსფერები თქვენი კომფორტისთვის.</p>
             <div className="gold-line"></div>
           </div>
           <div className="categories-grid">
@@ -701,247 +942,368 @@ export default function Home() {
               <div
                 key={idx}
                 className="category-card"
-                onClick={() => document.querySelector("#booking")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => document.querySelector(cat.link)?.scrollIntoView({ behavior: "smooth" })}
               >
-                <div className="category-icon">{cat.icon}</div>
+                <span className="cat-num">0{idx + 1}</span>
                 <h3 className="category-title">{cat.title}</h3>
                 <p className="category-desc">{cat.desc}</p>
-                <span className="category-cta">დაჯავშნეთ {ICONS.arrow}</span>
-                <div className="category-glow"></div>
+                <div className="cat-arrow">→</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ==================== BATUMI TOURS SECTION ==================== */}
-      <section className="batumi-section" id="batumi-tours">
-        <div className="batumi-section-header">
-          <div>
-            <span className="section-eyebrow">🌊 აჭარის მიმართულება</span>
-            <h2 className="batumi-section-title">ბათუმი & რეგიონის ტურები</h2>
-          </div>
-          <p className="batumi-section-sub">ზღვა, მთა, ხეობები — ერთ რეგიონში</p>
-        </div>
 
-        <div className="batumi-carousel-outer">
-          <button
-            className="batumi-nav batumi-nav-prev"
-            aria-label="წინა"
-            onClick={() => document.getElementById('batumi-track').scrollBy({ left: -400, behavior: 'smooth' })}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6"/>
-            </svg>
-          </button>
-
-          <div className="batumi-track" id="batumi-track">
-            {BATUMI_TOURS.map((tour, idx) => (
-              <article key={idx} className="batumi-cin-card" onClick={() => handleBookNow(tour.title, tour.price)}>
-                <Image src={tour.img} alt={tour.title} className="batumi-cin-img" fill style={{objectFit:"cover"}} />
-                <div className="batumi-cin-overlay" />
-                <span className="batumi-cin-badge">{tour.badge}</span>
-                <div className="batumi-cin-body">
-                  <div className="batumi-cin-meta">
-                    <span>⏱ {tour.duration}</span>
-                    <span>·</span>
-                    <span>{tour.people}</span>
-                  </div>
-                  <h3 className="batumi-cin-title">{tour.title}</h3>
-                  <p className="batumi-cin-desc">{tour.desc}</p>
-                  <div className="batumi-cin-footer">
-                    <span className="batumi-cin-price">{tour.price}</span>
-                    <span className="batumi-cin-cta">დაჯავშნეთ {ICONS.arrow}</span>
-                  </div>
+      {/* ==================== THEMED TOUR SECTIONS ==================== */}
+      <div className="themed-sections-container">
+        {SECTIONS_DATA.map((sec) =>
+          sec.id === "popular" ? (
+            <section key={sec.id} className="popular-destinations-section" id={sec.id}>
+              <div className="popular-destinations-inner">
+                {/* Section Header */}
+                <div className="popular-destinations-header">
+                  <span className="pop-eyebrow">ყველაზე მოთხოვნადი</span>
+                  <h2 className="pop-main-title"><span className="teal-accent">საქართველოს ტურისტული</span> ადგილები</h2>
                 </div>
-              </article>
-            ))}
-          </div>
 
-          <button
-            className="batumi-nav batumi-nav-next"
-            aria-label="შემდეგი"
-            onClick={() => document.getElementById('batumi-track').scrollBy({ left: 400, behavior: 'smooth' })}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </button>
-        </div>
-      </section>
+                <div className="pop-content-layout pop-layout-swapped">
+                  {/* Left Column: Asymmetrical/Staggered Cards */}
+                  <div className="pop-cards-col">
+                    <div className="pop-cards-wrapper">
+                      <div className="pop-card" onClick={() => handleBookNow("პრომეთეს მღვიმე", "₾100-დან")}>
+                        <div className="pop-card-img-wrap">
+                          <Image
+                            src="https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80"
+                            alt="პრომეთეს მღვიმე"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 30vw"
+                            style={{ objectFit: 'cover' }}
+                            loading="lazy"
+                          />
+                          <div className="pop-card-badge">TOP 1 პოპულარული</div>
+                          <div className="pop-card-gradient"></div>
+                          <div className="pop-card-footer-info">
+                            <h4 className="pop-card-title">პრომეთეს მღვიმე</h4>
+                            <span className="pop-card-sub">წყალტუბო • 14 საათი</span>
+                          </div>
+                        </div>
+                      </div>
 
-      {/* ==================== FEATURED TOURS SECTION ==================== */}
-      <section className="tours-section" id="tours">
-        {/* Batumi cinematic banner strip */}
-        <div className="tours-hero-strip">
-          <Image src={IMAGES.hero} alt="საქართველო" fill className="tours-strip-img" style={{objectFit:"cover"}} />
-          <div className="tours-strip-overlay" />
-          <div className="tours-strip-text">
-            <span className="tours-strip-eyebrow">ჩვენი ტურები</span>
-            <h2 className="tours-strip-title">პოპულარული მარშრუტები</h2>
-            <p className="tours-strip-desc">აირჩიეთ სასურველი ტური და დაიწყეთ დაუვიწყარი მოგზაურობა</p>
-          </div>
-        </div>
+                      <div className="pop-card pop-card-staggered" onClick={() => handleBookNow("მარტვილის კანიონი", "₾100-დან")}>
+                        <div className="pop-card-img-wrap">
+                          <Image
+                            src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80"
+                            alt="მარტვილის კანიონი"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 30vw"
+                            style={{ objectFit: 'cover' }}
+                            loading="lazy"
+                          />
+                          <div className="pop-card-badge">TOP 2 პოპულარული</div>
+                          <div className="pop-card-gradient"></div>
+                          <div className="pop-card-footer-info">
+                            <h4 className="pop-card-title">მარტვილის კანიონი</h4>
+                            <span className="pop-card-sub">სამეგრელო • ნავით გასეირნება</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-        {/* Carousel */}
-        <div className="tours-carousel-wrap">
-          <button
-            className="carousel-nav carousel-prev"
-            aria-label="წინა"
-            onClick={() => {
-              document.getElementById('tours-track').scrollBy({ left: -380, behavior: 'smooth' });
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6"/>
-            </svg>
-          </button>
-
-          <div className="tours-track" id="tours-track">
-            {TOURS.map((tour, idx) => (
-              <article key={idx} className="tour-card">
-                <div className="tour-card-img-wrap">
-                  <Image
-                    src={tour.img}
-                    alt={tour.title}
-                    className="tour-card-img"
-                    width={400}
-                    height={260}
-                    loading="lazy"
-                  />
-                  <span className="tour-card-badge">{tour.badge}</span>
-                  <span className="tour-card-price">{tour.price}</span>
-                </div>
-                <div className="tour-card-body">
-                  <div className="tour-card-meta">
-                    <span className="tour-meta-item">{ICONS.clock} {tour.duration}</span>
-                    <span className="tour-meta-item">{ICONS.people} {tour.people}</span>
-                  </div>
-                  <h3 className="tour-card-title">{tour.title}</h3>
-                  <p className="tour-card-desc">{tour.desc}</p>
-                  <div className="tour-card-footer">
-                    <div className="tour-rating">★★★★★</div>
-                    <button className="btn-book" onClick={() => handleBookNow(tour.title, tour.price)}>
-                      დაჯავშნეთ {ICONS.arrow}
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <button
-            className="carousel-nav carousel-next"
-            aria-label="შემდეგი"
-            onClick={() => {
-              document.getElementById('tours-track').scrollBy({ left: 380, behavior: 'smooth' });
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </button>
-        </div>
-      </section>
-
-      {/* ==================== INTERNATIONAL TOURS SECTION ==================== */}
-      <section className="intl-section" id="international">
-        <div className="intl-inner">
-          <div className="intl-header">
-            <div>
-              <span className="section-eyebrow">✈️ გლობალური მიმართულებები</span>
-              <h2 className="intl-title">ტურები საზღვარგარეთ</h2>
-            </div>
-            <p className="intl-subtitle">მოგზაურობა სრული ორგანიზებით — ავიაბილეთები, პრემიუმ სასტუმროები და გიდი</p>
-          </div>
-
-          <div className="intl-carousel-wrap">
-            <button
-              className="intl-nav intl-prev"
-              aria-label="წინა"
-              onClick={() => {
-                document.getElementById('intl-track').scrollBy({ left: -380, behavior: 'smooth' });
-              }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6"/>
-              </svg>
-            </button>
-
-            <div className="intl-track" id="intl-track">
-              {[
-                {
-                  img: "https://images.unsplash.com/photo-1499856871958-5b9357976b82?w=800&q=80",
-                  city: "პარიზი",
-                  country: "საფრანგეთი",
-                  tag: "პოპულარული",
-                  price: "₾1,800-დან",
-                  desc: "ეიფელის კოშკი, ლუვრი, მონმარტი და რომანტიკული ვახშამი სენაზე.",
-                },
-                {
-                  img: "https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?w=800&q=80",
-                  city: "დუბაი",
-                  country: "არაბეთის საემიროები",
-                  tag: "VIP ექსკლუზივი",
-                  price: "₾2,200-დან",
-                  desc: "ბურჯ ხალიფა, უდაბნოს საფარი, დასვენება ჯუმეირას სანაპიროზე.",
-                },
-                {
-                  img: "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=800&q=80",
-                  city: "ლონდონი",
-                  country: "დიდი ბრიტანეთი",
-                  tag: "კულტურული",
-                  price: "₾1,950-დან",
-                  desc: "ბიგ ბენი, ტაუერის ხიდი, ბუკინჰემის სასახლე და მუზეუმები.",
-                },
-                {
-                  img: "https://images.unsplash.com/photo-1555992336-03a23c7b20ee?w=800&q=80",
-                  city: "სანტორინი",
-                  country: "საბერძნეთი",
-                  tag: "დასვენება",
-                  price: "₾1,400-დან",
-                  desc: "ცისფერი გუმბათები, ეგეოსის ზღვის ულამაზესი მზის ჩასვლა.",
-                },
-                {
-                  img: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80",
-                  city: "სტამბული",
-                  country: "თურქეთი",
-                  tag: "ისტორიული",
-                  price: "₾900-დან",
-                  desc: "ბოსფორის კრუიზი, აია-სოფია, ლურჯი მეჩეთი და დიდი ბაზარი.",
-                },
-              ].map((dest, idx) => (
-                <article
-                  key={idx}
-                  className="intl-card"
-                  onClick={() => handleBookNow(`${dest.city} — ${dest.country}`, dest.price)}
-                >
-                  <div className="intl-card-img-wrap">
-                    <Image src={dest.img} alt={dest.city} fill className="intl-card-img" style={{objectFit:"cover"}} />
-                    <span className="intl-card-tag">{dest.tag}</span>
-                    <span className="intl-card-price">{dest.price}</span>
-                  </div>
-                  <div className="intl-card-body">
-                    <h3 className="intl-card-city">{dest.city}</h3>
-                    <p className="intl-card-desc">{dest.desc}</p>
-                    <div className="intl-card-footer">
-                      <span className="intl-card-country">📍 {dest.country}</span>
-                      <span className="intl-card-cta">დაჯავშნეთ {ICONS.arrow}</span>
+                    <div className="pop-dots">
+                      <span className="pop-dot active"></span>
+                      <span className="pop-dot"></span>
+                      <span className="pop-dot"></span>
                     </div>
                   </div>
-                </article>
-              ))}
-            </div>
 
+                  {/* Right Column: Information & Attractions Grid */}
+                  <div className="pop-info-col">
+                    <h3 className="pop-subheading">სად წახვიდეთ ბათუმიდან</h3>
+                    <p className="pop-description">
+                      საუკეთესო ერთდღიანი ტურები ბათუმიდან. აირჩიეთ სასიამოვნო ლოკაციები — ბათუმის სიახლოვეს მდებარე ბუნება, ჩანჩქერები და <span style={{color:'#29b2b7'}}>ბათუმის სანაპირო</span>. მოინახულეთ მთები, <span style={{color:'#29b2b7'}}>ჩანჩქერები</span> და <span style={{color:'#29b2b7'}}>პლაჟები</span> — ბათუმი თქვენს შვებულებას დაუვიწყარს გახდის.
+                    </p>
+
+                    <div className="pop-attractions-grid">
+                      <div className="pop-attraction-item" onClick={() => handleBookNow("პრომეთეს მღვიმე", "₾100-დან")}>
+                        <span className="pop-pin">📍</span>
+                        <span className="pop-name">პრომეთეს მღვიმე</span>
+                      </div>
+                      <div className="pop-attraction-item" onClick={() => handleBookNow("მახუნცეთის ჩანჩქერი", "₾80-დან")}>
+                        <span className="pop-pin">📍</span>
+                        <span className="pop-name">მახუნცეთის ჩანჩქერი</span>
+                      </div>
+                      <div className="pop-attraction-item" onClick={() => handleBookNow("მარტვილის კანიონი", "₾100-დან")}>
+                        <span className="pop-pin">📍</span>
+                        <span className="pop-name">მარტვილის კანიონი</span>
+                      </div>
+                      <div className="pop-attraction-item" onClick={() => handleBookNow("გვარას ციხე", "₾80-დან")}>
+                        <span className="pop-pin">📍</span>
+                        <span className="pop-name">გვარას ციხე</span>
+                      </div>
+                      <div className="pop-attraction-item" onClick={() => handleBookNow("ბათუმის ბოტანიკური ბაღი", "₾70-დან")}>
+                        <span className="pop-pin">📍</span>
+                        <span className="pop-name">ბოტანიკური ბაღი</span>
+                      </div>
+                      <div className="pop-attraction-item" onClick={() => handleBookNow("მირვეთის ჩანჩქერი", "₾80-დან")}>
+                        <span className="pop-pin">📍</span>
+                        <span className="pop-name">მირვეთის ჩანჩქერი</span>
+                      </div>
+                    </div>
+
+                    <a href="#booking" onClick={() => handleBookNow("ყველა ლოკაცია (კონსულტაცია)", "უფასო")} className="pop-all-btn">
+                      ყველა ლოკაცია <span>→</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* Popular Tours Auto-Sliding 2-Card Pair Carousel */}
+                <div className="pop-tours-grid-wrapper">
+                  <div className="pop-grid-header-row">
+                    <div className="pop-grid-header">
+                      <h3 className="pop-grid-title">პოპულარული <span className="teal-accent">ტურები</span></h3>
+                      <p className="pop-grid-subtitle">ყველაზე მოთხოვნადი ექსკურსიები საქართველოს მასშტაბით</p>
+                    </div>
+
+                    <div className="pop-tour-slider-dots">
+                      {tourPairs.map((_, idx) => (
+                        <button
+                          key={idx}
+                          className={`pop-tour-dot ${idx === popTourSlide ? "active" : ""}`}
+                          onClick={() => setPopTourSlide(idx)}
+                          aria-label={`სლაიდი ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mini-cards-slider-container">
+                    <div
+                      className="mini-cards-slider-track"
+                      style={{ transform: `translateX(-${popTourSlide * 100}%)` }}
+                    >
+                      {tourPairs.map((pair, pIdx) => (
+                        <div key={pIdx} className="mini-cards-pair-slide">
+                          {pair.map((tour) => (
+                            <article
+                              key={tour.id}
+                              className="pop-fc"
+                              onClick={() => handleTourClick(tour)}
+                            >
+                              {/* Full-bleed Image */}
+                              <Image
+                                src={tour.img}
+                                alt={tour.title}
+                                fill
+                                style={{ objectFit: "cover" }}
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                                loading="lazy"
+                                className="pop-fc-img"
+                              />
+
+                              {/* Dark gradient overlay */}
+                              <div className="pop-fc-gradient" />
+
+                              {/* Top row: badge + dates */}
+                              <div className="pop-fc-top">
+                                <span className="pop-fc-badge">{tour.badge}</span>
+                                <div className="pop-fc-dates">
+                                  {tour.dates?.slice(0, 3).map((d, i) => (
+                                    <span key={i} className="pop-fc-date">{d}</span>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Bottom overlay body */}
+                              <div className="pop-fc-body">
+                                <div className="pop-fc-meta">
+                                  <span>⏱ {tour.duration}</span>
+                                  <span className="pop-fc-dot">•</span>
+                                  <span>{tour.location}</span>
+                                </div>
+                                <h3 className="pop-fc-title">{tour.title}</h3>
+                                <p className="pop-fc-desc">{tour.desc}</p>
+                                <div className="pop-fc-footer">
+                                  <div className="pop-fc-prices">
+                                    <div className="pop-fc-price-item">
+                                      <small>ჯგუფში</small>
+                                      <strong>{tour.priceGroup}</strong>
+                                    </div>
+                                    <div className="pop-fc-price-item">
+                                      <small>ინდივ.</small>
+                                      <strong>{tour.pricePrivate}</strong>
+                                    </div>
+                                  </div>
+                                  <button className="pop-fc-btn">დაჯავშნა →</button>
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section key={sec.id} className="themed-tours-section" id={sec.id}>
+              <div className="themed-section-header">
+                <h2 className="themed-section-title">{sec.title}</h2>
+              </div>
+
+              <div className="themed-tours-grid">
+                {sec.tours.map((tour, idx) => (
+                  <article
+                    key={idx}
+                    className="tb-card"
+                    onClick={() => handleTourClick(tour)}
+                  >
+                    <div className="tb-card-img-wrap">
+                      <Image
+                        src={tour.img}
+                        alt={tour.title}
+                        className="tb-card-img"
+                        fill
+                        style={{ objectFit: "cover" }}
+                        loading="lazy"
+                      />
+                      <span className="tb-badge">{tour.badge}</span>
+                      <div className="tb-overlay-right">
+                        <div className="tb-price-tag tb-price-priv">
+                          <small>ინდივიდუალური</small>
+                          <strong>{tour.pricePrivate}</strong>
+                        </div>
+                        <div className="tb-price-tag tb-price-group">
+                          <small>ჯგუფში</small>
+                          <strong>{tour.priceGroup}</strong>
+                        </div>
+                        <div className="tb-dates-row">
+                          {tour.dates?.map((d, i) => (
+                            <span key={i} className="tb-date-chip">{d}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="tb-card-body">
+                      <h3 className="tb-card-title">{tour.title}</h3>
+                      <p className="tb-card-annotation">{tour.desc}</p>
+                      <div className="tb-card-line"></div>
+                      <div className="tb-card-facilities">
+                        <span className="tb-facility-item">⏱ {tour.duration}</span>
+                        <span className="tb-facility-item">{tour.location || "📍 ბათუმიდან"}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )
+        )}
+      </div>
+      {/* ==================== TOUR SCHEDULE & FREE DATES SECTION ==================== */}
+      <section className="tour-schedule-section" id="schedule">
+        <div className="section-inner">
+          <div className="themed-section-header schedule-header">
+            <span className="schedule-eyebrow">თავისუფალი თარიღების განრიგი</span>
+            <h2 className="themed-section-title">ტურების განრიგი & თავისუფალი დღეები</h2>
+            <p className="schedule-subdesc">
+              დაგეგმეთ თქვენი მოგზაურობა წინასწარ — იხილეთ ტურების უახლოესი თავისუფალი თარიღები და დააჭირეთ დასაჯავშნად.
+            </p>
+          </div>
+
+          <div className="schedule-list-container">
+            {ALL_TOURS_SCHEDULE.map((item) => (
+              <article key={item.id} className="schedule-card-row">
+                <h3 className="schedule-tour-title" onClick={() => handleBookNow(item.title, item.priceGroup)}>
+                  {item.title}
+                </h3>
+                <div className="schedule-tour-price">
+                  <strong>{item.priceGroup}</strong>, <span>{item.priceNote}</span>
+                </div>
+                <p className="schedule-tour-desc">{item.locationShort}. {item.desc}</p>
+
+                <div className="schedule-months-flex">
+                  {item.months.map((mGroup, mIdx) => (
+                    <div key={mIdx} className="schedule-month-block">
+                      <span className="schedule-month-pill">{mGroup.monthName}</span>
+                      <div className="schedule-days-grid">
+                        {mGroup.dates.map((d, dIdx) => (
+                          <button
+                            key={dIdx}
+                            className="schedule-day-chip"
+                            onClick={() => handleBookNow(`${item.title} (${d})`, item.priceGroup)}
+                            title={`დაჯავშნეთ ${item.title} — ${d}`}
+                          >
+                            {d}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ==================== TRANSPORT SECTION ==================== */}
+      <section className="transport-section" id="batumi-tours">
+        <div className="container transport-hero">
+          <div className="themed-section-header" style={{ marginBottom: "2.2rem", textAlign: "center" }}>
+            <span className="pop-eyebrow">✦ კომფორტული მგზავრობა</span>
+            <h2 className="pop-main-title">
+              ტრანსპორტი & <span className="teal-accent">ტრანსფერები</span>
+            </h2>
+            <div className="transport-minimal-line">
+              <span>🚗 სედანი, მინივენი & SUV</span>
+              <span className="trans-dot">•</span>
+              <span>🛫 აეროპორტის დახვედრა 24/7</span>
+              <span className="trans-dot">•</span>
+              <span>🛡️ ინდივიდუალური მარშრუტები</span>
+            </div>
+          </div>
+          <div className="transport-slider-wrapper">
             <button
-              className="intl-nav intl-next"
-              aria-label="შემდეგი"
+              className="slider-arrow slider-arrow-left"
+              id="transport-prev"
+              aria-label="Previous"
               onClick={() => {
-                document.getElementById('intl-track').scrollBy({ left: 380, behavior: 'smooth' });
+                const el = document.getElementById('transport-photos-grid');
+                if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6"/>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <div className="transport-photos-row" id="transport-photos-grid">
+              <a href="#booking" onClick={() => handleBookNow("ტრანსპორტი: ავტომობილი 1", "₾50-დან")} className="transport-photo transport-photo-1">
+                <img src="1car.webp" onError={(e) => { e.currentTarget.src = "/car1.png"; }} alt="GeorgiaTrips Transport 1" />
+              </a>
+              <a href="#booking" onClick={() => handleBookNow("ტრანსპორტი: ავტომობილი 2", "₾90-დან")} className="transport-photo transport-photo-2">
+                <img src="2car.webp" onError={(e) => { e.currentTarget.src = "/car2.png"; }} alt="GeorgiaTrips Transport 2" />
+              </a>
+              <a href="#booking" onClick={() => handleBookNow("ტრანსპორტი: ავტომობილი 3", "₾180-დან")} className="transport-photo transport-photo-3">
+                <img src="3car.webp" onError={(e) => { e.currentTarget.src = "/car3.png"; }} alt="GeorgiaTrips Transport 3" />
+              </a>
+              <a href="#booking" onClick={() => handleBookNow("ტრანსპორტი: ავტომობილი 4", "₾220-დან")} className="transport-photo transport-photo-4">
+                <img src="4car.webp" onError={(e) => { e.currentTarget.src = "/car4.png"; }} alt="GeorgiaTrips Transport 4" />
+              </a>
+            </div>
+            <button
+              className="slider-arrow slider-arrow-right"
+              id="transport-next"
+              aria-label="Next"
+              onClick={() => {
+                const el = document.getElementById('transport-photos-grid');
+                if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
           </div>
@@ -1005,7 +1367,7 @@ export default function Home() {
             <p className="section-desc">გაეცანით ჩვენს მოგზაურობებს სოციალური ქსელებიდან — რეალური კადრები და ემოციები</p>
             <div className="gold-line"></div>
           </div>
-          
+
           <div className={`social-feed-grid ${showAllSocial ? "show-all" : ""}`}>
             {SOCIAL_POSTS.map((post, idx) => (
               <article key={idx} className={`social-post-card social-${post.platform}`}>
@@ -1032,13 +1394,13 @@ export default function Home() {
                 <div className="sp-content">
                   <p className="sp-text">{post.text}</p>
                   <div className="sp-img-wrap" onClick={() => setLightboxImage({ src: post.img, title: post.username })}>
-                    <Image 
-                      src={post.img} 
-                      alt={post.username} 
-                      width={400} 
-                      height={300} 
-                      style={{ objectFit: "cover" }} 
-                      className="sp-image" 
+                    <Image
+                      src={post.img}
+                      alt={post.username}
+                      width={400}
+                      height={300}
+                      style={{ objectFit: "cover" }}
+                      className="sp-image"
                     />
                   </div>
                 </div>
@@ -1049,22 +1411,22 @@ export default function Home() {
                     {/* Like */}
                     <button className="sp-action-btn sp-like-btn">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                       </svg>
                       <span>{post.likes}</span>
                     </button>
                     {/* Comment */}
                     <button className="sp-action-btn sp-comment-btn">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                       </svg>
                       <span>{post.comments || post.replies || "12"}</span>
                     </button>
                     {/* Share */}
                     <button className="sp-action-btn sp-share-btn">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"/>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
                       </svg>
                       <span>გაზიარება</span>
                     </button>
@@ -1075,22 +1437,22 @@ export default function Home() {
           </div>
 
           <div className="social-feed-more-wrap">
-            <button 
-              className="social-feed-more-btn" 
+            <button
+              className="social-feed-more-btn"
               onClick={() => setShowAllSocial(!showAllSocial)}
             >
               {showAllSocial ? "მეტის დამალვა" : "მეტის ჩვენება"}
-              <svg 
-                className={showAllSocial ? "rotate-180" : ""} 
+              <svg
+                className={showAllSocial ? "rotate-180" : ""}
                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
               >
-                <path d="M6 9l6 6 6-6"/>
+                <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
           </div>
         </div>
       </section>
-      
+
       {/* Lightbox Modal */}
       {lightboxImage && (
         <div className="lightbox" onClick={() => setLightboxImage(null)}>
@@ -1232,8 +1594,8 @@ export default function Home() {
             <button className="slider-btn" onClick={() => setActiveReviewSlide((prev) => (prev - 1 + REVIEWS.length) % REVIEWS.length)}>‹</button>
             <div className="slider-dots">
               {REVIEWS.map((_, i) => (
-                <button 
-                  key={i} 
+                <button
+                  key={i}
                   className={`slider-dot ${i === activeReviewSlide ? "active" : ""}`}
                   onClick={() => setActiveReviewSlide(i)}
                 ></button>
@@ -1264,7 +1626,7 @@ export default function Home() {
                 >
                   <span>{faq.q}</span>
                   <svg className="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9l6 6 6-6"/>
+                    <path d="M6 9l6 6 6-6" />
                   </svg>
                 </button>
                 <div className="faq-answer" id={`faq-answer-${idx}`}>
@@ -1278,117 +1640,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ==================== BOOKING FORM ==================== */}
-      <section className="section" id="booking">
-        <div className="section-inner">
-          <div className="booking-wrap">
-            <div className="booking-info">
-              <div className="section-header">
-                <span className="section-eyebrow">მოგზაურობის დაჯავშნა</span>
-                <h2 className="section-title">დაიწყეთ თქვენი საოცნებო მოგზაურობა</h2>
-                <p className="section-desc">შეავსეთ ფორმა და ჩვენი კონსულტანტი 30 წუთში WhatsApp-ის საშუალებით დაგიკავშირდებათ.</p>
-                <div className="gold-line"></div>
-              </div>
-              <div className="booking-highlights">
-                <div className="booking-highlight">პასუხი 30 წუთში</div>
-                <div className="booking-highlight">უფასო კონსულტაცია</div>
-                <div className="booking-highlight">ინდივიდუალური ტური</div>
-                <div className="booking-highlight">სრული 24/7 მხარდაჭერა</div>
-                <div className="booking-highlight">ფასი ბიუჯეტის მიხედვით</div>
-              </div>
-            </div>
-            <div className="booking-form-wrap">
-              <h3 className="form-title">გაგზავნეთ მოთხოვნა</h3>
-              <p className="form-subtitle">WhatsApp-ის საშუალებით 30 წუთში დაგიკავშირდებით</p>
-              <form onSubmit={handleFormSubmit}>
-                <div className="form-grid">
-                  <div className="form-row">
-                    <label htmlFor="f-name">სახელი და გვარი *</label>
-                    <input 
-                      type="text" 
-                      id="f-name" 
-                      placeholder="გიორგი მაისურაძე" 
-                      required 
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label htmlFor="f-country">ქვეყანა</label>
-                    <input 
-                      type="text" 
-                      id="f-country" 
-                      placeholder="საქართველო" 
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-grid">
-                  <div className="form-row">
-                    <label htmlFor="f-date-from">გამგზავრების თარიღი *</label>
-                    <input 
-                      type="date" 
-                      id="f-date-from" 
-                      required 
-                      value={formData.dateFrom}
-                      onChange={(e) => setFormData({ ...formData, dateFrom: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label htmlFor="f-date-to">დაბრუნების თარიღი</label>
-                    <input 
-                      type="date" 
-                      id="f-date-to" 
-                      value={formData.dateTo}
-                      onChange={(e) => setFormData({ ...formData, dateTo: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <label htmlFor="f-people">მოგზაურთა რაოდენობა *</label>
-                  <input 
-                    type="text"
-                    id="f-people" 
-                    placeholder="მაგ: 3 კაცი"
-                    required
-                    value={formData.people}
-                    onChange={(e) => setFormData({ ...formData, people: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-row">
-                  <label htmlFor="f-budget">ბიუჯეტი (ერთ კაცზე) *</label>
-                  <input 
-                    type="text"
-                    id="f-budget" 
-                    placeholder="მაგ: ₾500 - ₾1,000"
-                    required
-                    value={formData.budget}
-                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                  />
-                </div>
-
-                <div className="form-row">
-                  <label htmlFor="f-notes">დამატებითი ინფორმაცია</label>
-                  <textarea 
-                    id="f-notes" 
-                    placeholder="კონკრეტული მოთხოვნები, ტურის კატეგორია, სასურველი ენა..."
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  ></textarea>
-                </div>
-
-                <button type="submit" className="btn-submit-wa">
-                  {ICONS.wa} <span>გაგზავნა WhatsApp-ით</span>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ==================== WEATHER SECTION ==================== */}
       <section className="section weather-section" id="weather">
@@ -1403,11 +1654,11 @@ export default function Home() {
               {weatherLoading
                 ? "ცოცხალი მონაცემების ჩატვირთვა..."
                 : isLiveWeather
-                ? "ცოცხალი მონაცემები — Open-Meteo"
-                : "მიახლოებითი მონაცემები"}
+                  ? "ცოცხალი მონაცემები — Open-Meteo"
+                  : "მიახლოებითი მონაცემები"}
             </div>
           </div>
-          
+
           <div className="weather-wrap">
             {/* Location selector tabs */}
             <div className="weather-tabs">
@@ -1438,7 +1689,7 @@ export default function Home() {
                       </div>
                     </div>
                     <p className="weather-main-desc">{current.desc}</p>
-                    
+
                     <div className="weather-metrics">
                       <div className="weather-metric">
                         <span className="metric-label">ტენიანობა</span>
@@ -1481,7 +1732,7 @@ export default function Home() {
         aria-label="დაბრუნება თავში"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 19V5M5 12l7-7 7 7"/>
+          <path d="M12 19V5M5 12l7-7 7 7" />
         </svg>
       </button>
 

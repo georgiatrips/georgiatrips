@@ -68,55 +68,69 @@ function uvLabel(uv) {
 const FORECAST_LABELS = ["ხვალ", "ზეგ", "შემდეგ"];
 
 async function fetchCity(city) {
-  const url =
-    `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
-    `&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code` +
-    `&daily=weather_code,temperature_2m_max,uv_index_max` +
-    `&timezone=auto&forecast_days=4`;
+  try {
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
+      `&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code` +
+      `&daily=weather_code,temperature_2m_max,uv_index_max` +
+      `&timezone=auto&forecast_days=4`;
 
-  const res = await fetch(url, { next: { revalidate: 900 } });
-  if (!res.ok) throw new Error(`Open-Meteo error for ${city.key}: ${res.status}`);
-  const data = await res.json();
+    const res = await fetch(url, { next: { revalidate: 900 }, signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error(`Open-Meteo error for ${city.key}: ${res.status}`);
+    const data = await res.json();
 
-  const current = mapWeatherCode(data.current.weather_code);
+    const current = mapWeatherCode(data.current.weather_code);
 
-  const forecast = FORECAST_LABELS.map((day, i) => {
-    // daily[0] is today, so tomorrow starts at index 1
-    const idx = i + 1;
-    const m = mapWeatherCode(data.daily.weather_code[idx]);
+    const forecast = FORECAST_LABELS.map((day, i) => {
+      const idx = i + 1;
+      const m = mapWeatherCode(data.daily.weather_code[idx]);
+      return {
+        day,
+        temp: `${Math.round(data.daily.temperature_2m_max[idx])}°C`,
+        condition: m.icon,
+      };
+    });
+
     return {
-      day,
-      temp: `${Math.round(data.daily.temperature_2m_max[idx])}°C`,
-      condition: m.icon,
+      name: city.name,
+      temp: `${Math.round(data.current.temperature_2m)}°C`,
+      condition: current.condition,
+      desc: city.desc,
+      humidity: `${Math.round(data.current.relative_humidity_2m)}%`,
+      wind: `${Math.round(data.current.wind_speed_10m)} კმ/სთ`,
+      uv: uvLabel(data.daily.uv_index_max?.[0]),
+      forecast,
+      icon: current.icon,
     };
-  });
-
-  return {
-    name: city.name,
-    temp: `${Math.round(data.current.temperature_2m)}°C`,
-    condition: current.condition,
-    desc: city.desc,
-    humidity: `${Math.round(data.current.relative_humidity_2m)}%`,
-    wind: `${Math.round(data.current.wind_speed_10m)} კმ/სთ`,
-    uv: uvLabel(data.daily.uv_index_max?.[0]),
-    forecast,
-    icon: current.icon,
-  };
+  } catch (err) {
+    console.warn(`[Weather API] fallback for ${city.name}:`, err.message);
+    return null;
+  }
 }
 
 export async function GET() {
   try {
     const results = await Promise.all(CITIES.map(fetchCity));
     const payload = {};
+    let hasValidData = false;
+
     CITIES.forEach((city, i) => {
-      payload[city.key] = results[i];
+      if (results[i]) {
+        payload[city.key] = results[i];
+        hasValidData = true;
+      }
     });
+
+    if (!hasValidData) {
+      return NextResponse.json({ error: "weather_unavailable" }, { status: 503 });
+    }
+
     return NextResponse.json(
       { data: payload, updatedAt: new Date().toISOString() },
       { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=1800" } }
     );
   } catch (err) {
-    console.log("[v0] weather route error:", err.message);
-    return NextResponse.json({ error: "weather_unavailable" }, { status: 502 });
+    console.log("[Weather API] Error:", err.message);
+    return NextResponse.json({ error: "weather_unavailable" }, { status: 503 });
   }
 }

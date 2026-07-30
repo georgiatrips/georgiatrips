@@ -9,8 +9,6 @@ import { BrandLogo, WA_LINK, WhatsAppIcon } from "../lib/shared";
 export default function Navbar({ active = "home" }) {
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [toursDropdownOpen, setToursDropdownOpen] = useState(false);
-  const [mobilToursOpen, setMobilToursOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [activeLang, setActiveLang] = useState("KA");
@@ -37,7 +35,7 @@ export default function Navbar({ active = "home" }) {
   }, []);
 
   return (
-    <nav className={`nav ${navScrolled ? "scrolled" : ""}`}>
+    <nav className={`nav ${navScrolled || mobileMenuOpen ? "scrolled" : ""}`}>
       {/* Logo */}
       <Link href="/" className="nav-logo" aria-label="GeorgiaTrips — მთავარი">
         <BrandLogo priority />
@@ -50,32 +48,9 @@ export default function Navbar({ active = "home" }) {
       {/* Desktop Links */}
       <ul className="nav-links">
         <li><Link href="/#home">მთავარი</Link></li>
-        <li
-          className="nav-dropdown-wrap"
-          onMouseEnter={() => openDropdown(setToursDropdownOpen)}
-          onMouseLeave={() => scheduleClose("tours", setToursDropdownOpen)}
-        >
-          <button
-            className={`nav-dropdown-trigger ${active === "tours" ? "active" : ""}`}
-            aria-haspopup="true"
-            aria-expanded={toursDropdownOpen}
-          >
-            ტურები
-            <svg className={`nav-chevron ${toursDropdownOpen ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-          {toursDropdownOpen && (
-            <div className="nav-dropdown">
-              <Link href="/domestic-tours" className="nav-dropdown-item">შიდა ტურები</Link>
-              <Link href="/international-tours" className="nav-dropdown-item">საერთაშორისო ტურები</Link>
-            </div>
-          )}
-        </li>
-        <li><Link href="/#batumi-tours">ტრანსპორტი</Link></li>
-        <li><Link href="/#why">სტატიები</Link></li>
-        <li><Link href="/#home">ჩვენ შესახებ</Link></li>
-        <li><Link href="/#booking">კონტაქტი</Link></li>
+        <li><Link href="/tours" className={active === "tours" ? "active" : ""}>ტურები</Link></li>
+        <li><Link href="/#batumi-tours" className={active === "transport" ? "active" : ""}>ტრანსპორტი</Link></li>
+        <li><Link href="/#why" className={active === "posts" ? "active" : ""}>სტატიები</Link></li>
       </ul>
 
       {/* Right Side Controls */}
@@ -148,24 +123,9 @@ export default function Navbar({ active = "home" }) {
       {/* Mobile Navigation Dropdown */}
       <div className={`nav-mobile ${mobileMenuOpen ? "open" : ""}`}>
         <Link href="/#home" onClick={() => setMobileMenuOpen(false)}>მთავარი</Link>
-        <div className="nav-mobile-dropdown">
-          <button className="nav-mobile-section-btn" onClick={() => setMobilToursOpen(!mobilToursOpen)}>
-            ტურები
-            <svg className={`nav-chevron ${mobilToursOpen ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-          {mobilToursOpen && (
-            <div className="nav-mobile-sub">
-              <Link href="/domestic-tours" onClick={() => setMobileMenuOpen(false)}>შიდა ტურები</Link>
-              <Link href="/international-tours" onClick={() => setMobileMenuOpen(false)}>საერთაშორისო ტურები</Link>
-            </div>
-          )}
-        </div>
+        <Link href="/tours" onClick={() => setMobileMenuOpen(false)}>ტურები</Link>
         <Link href="/#batumi-tours" onClick={() => setMobileMenuOpen(false)}>ტრანსპორტი</Link>
         <Link href="/#why" onClick={() => setMobileMenuOpen(false)}>სტატიები</Link>
-        <Link href="/#home" onClick={() => setMobileMenuOpen(false)}>ჩვენ შესახებ</Link>
-        <Link href="/#booking" onClick={() => setMobileMenuOpen(false)}>კონტაქტი</Link>
         <div className="nav-mobile-controls">
           <div className="nav-mobile-ctrl-row">
             <span>ენა:</span>
