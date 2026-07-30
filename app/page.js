@@ -155,7 +155,7 @@ const CATEGORIES = [
 const SECTIONS_DATA = [
   {
     id: "popular",
-    title: "საქართველოს ტურისტული ადგილები",
+    title: "საქართველოს ტურისტული ად���ილები",
     tours: [
       {
         img: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80",
@@ -306,7 +306,7 @@ const SECTIONS_DATA = [
         title: "VIP ფუფუნების ვილები & რიზორტი",
         desc: "ექსკლუზიური დასვენება ��აუკეთესო ვილებში, პირადი მზარეულითა და ასისტენტით.",
         duration: "48+ საათი",
-        location: "📍 ყაზბეგი, ბათუმი",
+        location: "📍 ��აზბეგი, ბათუმი",
       },
       {
         img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=700&q=75",
@@ -457,7 +457,7 @@ const WEATHER_DATA = {
     name: "თბილისი",
     temp: "28°C",
     condition: "მზიანი",
-    desc: "იდეალური ამინდია ძველ თბილისში სასეირნოდ და მყუდრო კაფეებში დროის გასატარებლად.",
+    desc: "იდეა��ური ამინდია ძველ თბილისში სასეირნოდ და მყუდრო კაფეებში დროის გასატარებლად.",
     humidity: "42%",
     wind: "12 კმ/სთ",
     uv: "საშუალო (5)",
@@ -770,7 +770,11 @@ export default function Home() {
           {/* Minimalist Quick Search Widget */}
           <div className="hero-search-bar">
             <div className="hero-search-field">
-              <span className="hero-search-icon">📍</span>
+              <span className="hero-search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
               <div className="hero-search-input-wrap">
                 <label>მიმართულება</label>
                 <select
@@ -792,7 +796,11 @@ export default function Home() {
             <div className="hero-search-divider" />
 
             <div className="hero-search-field">
-              <span className="hero-search-icon">📅</span>
+              <span className="hero-search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </span>
               <div className="hero-search-input-wrap">
                 <label>თარიღი</label>
                 <DatePicker
@@ -807,7 +815,11 @@ export default function Home() {
             <div className="hero-search-divider" />
 
             <div className="hero-search-field">
-              <span className="hero-search-icon">👥</span>
+              <span className="hero-search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </span>
               <div className="hero-search-input-wrap">
                 <label>ტურის ფორმატი</label>
                 <select
@@ -832,7 +844,11 @@ export default function Home() {
         </div>
 
         <div className="hero-location-badge">
-          <span className="loc-pin">📍</span>
+          <span className="loc-pin">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+            </svg>
+          </span>
           <span className="loc-text">{HERO_SLIDES[currentHeroSlide].label}</span>
         </div>
 

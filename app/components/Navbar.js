@@ -37,15 +37,22 @@ export default function Navbar({ active = "home" }) {
     closeTimers.current[key] = setTimeout(() => setter(false), 220);
   };
 
+  // Pages with a dark full-width hero can afford a fully transparent navbar
+  // at the very top; light pages keep the solid background for readability.
+  const [hasHero, setHasHero] = useState(false);
+
   useEffect(() => {
+    setHasHero(!!document.querySelector(".hero, .tours-page-hero, .transfers-hero, .posts-hero, .tdp-hero2"));
     const handleScroll = () => setNavScrolled(window.scrollY > 50);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isTransparent = hasHero && !navScrolled && !mobileMenuOpen;
+
   return (
-    <nav className={`nav ${navScrolled || mobileMenuOpen ? "scrolled" : ""}`}>
+    <nav className={`nav ${navScrolled || mobileMenuOpen ? "scrolled" : ""} ${isTransparent ? "transparent" : ""}`}>
       {/* Logo */}
       <Link href="/" className="nav-logo" aria-label="GeorgiaTrips — მთავარი">
         <BrandLogo priority />

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BrandLogo, WA_LINK, WhatsAppIcon, PHONE_DISPLAY, TELEGRAM_LINK, INSTAGRAM_LINK } from "../lib/shared";
+import { BrandLogo, WA_LINK, PHONE_DISPLAY, TELEGRAM_LINK, INSTAGRAM_LINK } from "../lib/shared";
 
 // Shared site footer.
 export default function Footer() {
@@ -74,17 +74,12 @@ export default function Footer() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
               ბათუმი, ქუთაისის 27
             </div>
-            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="footer-wa-btn">
-              <WhatsAppIcon />
-              WhatsApp-ზე დაგვიკავშირდით
-            </a>
           </div>
         </div>
 
         {/* Footer Bottom */}
         <div className="footer-bottom">
-          <p>© 2026 GeorgiaTrips. ყველა უფლება დაცულია. <a href="#">კონფიდენციალურობა</a> · <a href="#">წესები</a></p>
-          <p>დამზადებულია სიყვარულით საქართველოში</p>
+          <p>© 2026 GeorgiaTrips. ყველა უფლება დაცულია.</p>
         </div>
       </div>
     </footer>
