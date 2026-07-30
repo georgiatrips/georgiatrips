@@ -235,6 +235,7 @@ function ToursPageContent() {
                   placeholder="აირჩიეთ თარიღი"
                   direction="up"
                   availableDates={allAvailableDates}
+                  variant="filter"
                 />
               </div>
 

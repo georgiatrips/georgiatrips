@@ -86,7 +86,7 @@ const FAQS = [
   },
   {
     q: "შესაძლებელია თუ არა ჯავშნის გაუქმება?",
-    a: "დიახ, ჯავშნის უფასო გაუქმება შესაძლებელია ტურის დაწყებამდე 48 საათით ადრე. დეტალური პირობები დამოკიდებულია ტურის ტიპზე და დაზუსტდება დაჯავშნისას.",
+    a: "დიახ, ჯავშნის უფასო გაუქმება შესაძლებელია ტურის დაწყებამდე 48 საათით ადრე. დეტალური პირობები დამოკიდებულია ტურის ��იპზე და დაზუსტდება დაჯავშნისას.",
   },
 ];
 
@@ -304,7 +304,7 @@ const SECTIONS_DATA = [
         pricePrivate: "₾2200",
         dates: ["07.27", "07.29", "08.02"],
         title: "VIP ფუფუნების ვილები & რიზორტი",
-        desc: "ექსკლუზიური დასვენება საუკეთესო ვილებში, პირადი მზარეულითა და ასისტენტით.",
+        desc: "ექსკლუზიური დასვენება ��აუკეთესო ვილებში, პირადი მზარეულითა და ასისტენტით.",
         duration: "48+ საათი",
         location: "📍 ყაზბეგი, ბათუმი",
       },
@@ -795,7 +795,12 @@ export default function Home() {
               <span className="hero-search-icon">📅</span>
               <div className="hero-search-input-wrap">
                 <label>თარიღი</label>
-                <DatePicker value={heroDate} onChange={(d) => setHeroDate(d)} availableDates={allAvailableDates} />
+                <DatePicker
+                  value={heroDate}
+                  onChange={(d) => setHeroDate(d)}
+                  availableDates={allAvailableDates}
+                  variant="hero"
+                />
               </div>
             </div>
 
@@ -1260,7 +1265,7 @@ export default function Home() {
             <div className="transport-minimal-line">
               <span>🚗 სედანი, მინივენი & SUV</span>
               <span className="trans-dot">•</span>
-              <span>🛫 აეროპორტის დახვედრა 24/7</span>
+              <span>🛫 აეროპ���რტის დახვედრა 24/7</span>
               <span className="trans-dot">•</span>
               <span>🛡️ ინდივიდუალური მარშრუტები</span>
             </div>

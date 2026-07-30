@@ -164,7 +164,7 @@ export const ALL_TOURS = [
   {
     id: "heli-caucasus",
     title: "კავკასიონის ვერტმფრენის ტური",
-    desc: "კავკასიის მწვერვალები და მიუწვდომელი ხეობები ჩიტის ფრენის სიმაღლიდან.",
+    desc: "კავკასიის მწვერვალებ�� და მიუწვდომელი ხეობები ჩიტის ფრენის სიმაღლიდან.",
     duration: "4 საათი",
     durationHours: 4,
     type: "oneday",
@@ -295,8 +295,8 @@ export const ALL_TOURS_SCHEDULE = [
     title: "პრომეთეს მღვიმე, მარტვილის კანიონი, მარანი და ცხელი წყლები",
     priceGroup: "100 ₾ / კაცი + შესასვლელი ბილეთები",
     priceNote: "ფასდაკლება ბავშვებისთვის",
-    locationShort: "ბათუმიდან, ჩაქვიდან, ქობულეთიდან. ბანაობა თერმულ წყაროებში",
-    desc: "პრომეთეს მღვიმის სტალაქტიტები, ნავით გასეირნება მარტვილში და თერმული წყლები.",
+    locationShort: "ბათუმიდან, ჩაქვიდან, ქობულეთიდან. ბანაობა თერმ���ლ წყაროებში",
+    desc: "პრომეთეს მღვიმის სტალაქტიტები, ნავით გასეირნება მარტვილში და თერმ��ლი წყლები.",
     months: [
       { monthName: "ივლისი", dates: ["28.07", "31.07"] },
       { monthName: "აგვისტო", dates: ["02.08", "04.08", "06.08", "09.08", "11.08", "13.08", "16.08", "18.08", "20.08", "21.08", "23.08", "25.08", "28.08", "30.08"] },
@@ -335,6 +335,49 @@ export function getTourById(id) {
   const tour = ALL_TOURS.find((t) => t.id === id);
   if (!tour) return ALL_TOURS[0];
   return tour;
+}
+
+const GEO_MONTH_NAMES = [
+  "იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი",
+  "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"
+];
+
+/**
+ * Returns the free-dates schedule for a single tour, grouped by month:
+ * [{ monthName: "ივლისი", monthIndex: 6, dates: ["28.07", ...] }]
+ *
+ * Prefers the curated ALL_TOURS_SCHEDULE entry; otherwise builds the
+ * groups from the tour's own `dates` array (stored as "MM.DD").
+ */
+export function getTourSchedule(tourId) {
+  const curated = ALL_TOURS_SCHEDULE.find((s) => s.id === tourId);
+  if (curated) {
+    return curated.months.map((m) => ({
+      monthName: m.monthName,
+      monthIndex: GEO_MONTH_NAMES.indexOf(m.monthName),
+      dates: m.dates
+    }));
+  }
+
+  const tour = ALL_TOURS.find((t) => t.id === tourId);
+  if (!tour || !tour.dates || tour.dates.length === 0) return [];
+
+  const grouped = new Map();
+  for (const raw of tour.dates) {
+    const [mm, dd] = raw.split(".");
+    const monthIndex = parseInt(mm, 10) - 1;
+    if (isNaN(monthIndex) || !dd) continue;
+    if (!grouped.has(monthIndex)) grouped.set(monthIndex, []);
+    grouped.get(monthIndex).push(`${dd}.${mm}`);
+  }
+
+  return Array.from(grouped.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([monthIndex, dates]) => ({
+      monthName: GEO_MONTH_NAMES[monthIndex] || "",
+      monthIndex,
+      dates: dates.sort()
+    }));
 }
 
 export function getTourDetails(tour) {
@@ -466,7 +509,7 @@ export function getTourDetails(tour) {
       "ლოკაციების შესასვლელი ბილეთები",
       "პირადი ხარჯები და კვება"
     ],
-    payment: "გადახდა გამგზავრების დღეს (ნაღდი ანგარიშსწორებით)",
+    payment: "���ადახდა გამგზავრების დღეს (ნაღდი ანგარიშსწორებით)",
     highlights: [
       tour.desc,
       "ულამაზესი პანორამული ხედები და ფოტო-ზონები",

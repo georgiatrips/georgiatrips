@@ -13897,3 +13897,566 @@ body > .dp-popover,
 }
 
 
+/* ============================================================
+   DATEPICKER VARIANTS — HERO (glass) & FILTER (panel)
+   The booking-form variant (.dp-trigger--form) stays unchanged.
+   ============================================================ */
+
+.dp-icon-shell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* the booking form keeps its plain inline icon */
+.dp-icon-shell--form {
+  display: inline-flex;
+}
+
+/* ── 1. HERO VARIANT — compact glass chip on the dark search bar ── */
+.hero-search-field .dp-wrap--hero {
+  position: relative;
+}
+
+.hero-search-field .dp-wrap--hero .dp-trigger--hero {
+  width: 100%;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px 5px 12px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 999px !important;
+  box-sizing: border-box;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-search-field .dp-wrap--hero .dp-trigger--hero:hover,
+.hero-search-field .dp-wrap--hero .dp-trigger--hero.dp-trigger--open {
+  background: rgba(41, 178, 183, 0.16) !important;
+  border-color: rgba(41, 178, 183, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(41, 178, 183, 0.14) !important;
+}
+
+/* the hero field already shows its own 📅 glyph, so the inline icon stays hidden */
+.dp-icon-shell--hero {
+  display: none !important;
+}
+
+.hero-search-field .dp-wrap--hero .dp-trigger-value {
+  color: #ffffff !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+}
+
+.hero-search-field .dp-wrap--hero .dp-trigger-value--placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-weight: 500 !important;
+}
+
+.dp-chevron--hero {
+  color: rgba(255, 255, 255, 0.55);
+  margin-right: 2px;
+}
+
+/* hero popover: deep navy glass with teal accents */
+.dp-popover--hero {
+  width: 296px !important;
+  background: linear-gradient(160deg, rgba(11, 31, 53, 0.98) 0%, rgba(8, 22, 38, 0.98) 100%) !important;
+  border: 1px solid rgba(41, 178, 183, 0.35) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 22px 48px rgba(2, 10, 20, 0.6) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+/* ── 2. FILTER VARIANT — light card that pops on the dark filter panel ── */
+.filter-group .dp-wrap--filter {
+  position: relative;
+}
+
+.dp-trigger--filter {
+  width: 100%;
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 0.6rem 0.75rem !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-left: 3px solid #fab418 !important;
+  border-radius: 10px !important;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.dp-trigger--filter:hover,
+.dp-trigger--filter.dp-trigger--open {
+  border-left-color: #106da4 !important;
+  box-shadow: 0 8px 20px rgba(4, 16, 30, 0.28) !important;
+}
+
+.dp-icon-shell--filter {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #0d233a;
+  color: #ffffff;
+}
+
+.dp-icon-shell--filter .dp-icon--filter {
+  width: 14px;
+  height: 14px;
+  display: block !important;
+  color: #ffffff !important;
+}
+
+.dp-trigger--filter .dp-trigger-value {
+  color: #0d233a !important;
+  font-size: 0.88rem;
+  font-weight: 700 !important;
+}
+
+.dp-trigger--filter .dp-trigger-value--placeholder {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+.dp-chevron--filter {
+  color: #0d233a;
+  margin-left: auto;
+}
+
+/* filter popover: light theme so it separates from the dark sidebar */
+.dp-popover--filter {
+  width: 296px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 50px rgba(4, 16, 30, 0.35) !important;
+}
+
+.dp-popover--filter::before {
+  background: linear-gradient(90deg, #106da4, #29b2b7, #fab418) !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.dp-popover--filter .dp-month-label {
+  color: #0d233a;
+}
+
+.dp-popover--filter .dp-nav-btn {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #106da4;
+}
+
+.dp-popover--filter .dp-nav-btn:hover {
+  background: #e2e8f0;
+}
+
+.dp-popover--filter .dp-weekday {
+  color: #64748b;
+}
+
+.dp-popover--filter .dp-day {
+  color: #334155;
+}
+
+.dp-popover--filter .dp-day:hover:not(:disabled) {
+  background: #e8f4fa;
+  color: #106da4;
+}
+
+.dp-popover--filter .dp-day--outside {
+  color: #cbd5e1 !important;
+}
+
+.dp-popover--filter .dp-day--past {
+  color: #cbd5e1;
+}
+
+.dp-popover--filter .dp-day--today {
+  border-color: rgba(16, 109, 164, 0.5);
+  color: #106da4;
+}
+
+.dp-popover--filter .dp-footer {
+  border-top: 1px solid #f1f5f9;
+}
+
+.dp-popover--filter .dp-today-btn {
+  background: #106da4;
+}
+
+.dp-popover--filter .dp-today-btn:hover {
+  background: #0b5580;
+}
+
+.dp-popover--filter .dp-clear-btn {
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.dp-popover--filter .dp-clear-btn:hover {
+  color: #0d233a;
+  border-color: #cbd5e1;
+}
+
+
+/* ============================================================
+   TOUR DETAIL HERO v2 — editorial media + overlapping info panel
+   ============================================================ */
+
+.tdp-hero2 {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.tdp-hero2-media {
+  position: relative;
+  min-height: 460px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.75rem 0 5.5rem;
+  overflow: hidden;
+}
+
+.tdp-hero2-media img {
+  transform: scale(1.02);
+}
+
+.tdp-hero2-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(7, 17, 30, 0.88) 0%, rgba(7, 17, 30, 0.35) 45%, rgba(7, 17, 30, 0.5) 100%);
+}
+
+.tdp-hero2-topbar,
+.tdp-hero2-caption {
+  position: relative;
+  z-index: 2;
+}
+
+.tdp-hero2-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tdp-hero2-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  flex-wrap: wrap;
+}
+
+.tdp-hero2-crumbs a {
+  color: rgba(255, 255, 255, 0.8);
+  transition: color 0.2s ease;
+}
+
+.tdp-hero2-crumbs a:hover {
+  color: #ffffff;
+}
+
+.tdp-hero2-crumbs .sep {
+  opacity: 0.4;
+}
+
+.tdp-hero2-crumbs .active {
+  color: #ffffff;
+  font-weight: 600;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tdp-hero2-badge {
+  background: rgba(250, 180, 24, 0.95);
+  color: #0d233a;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+}
+
+.tdp-hero2-caption {
+  max-width: 720px;
+}
+
+.tdp-hero2-kicker {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #29b2b7;
+  margin-bottom: 0.75rem;
+}
+
+.tdp-hero2-title {
+  font-family: var(--font-head);
+  font-size: clamp(1.6rem, 4.4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.18;
+  color: #ffffff;
+  text-wrap: balance;
+}
+
+/* Overlapping white facts panel */
+.tdp-hero2-panel {
+  position: relative;
+  z-index: 3;
+  margin-top: -4rem;
+  background: #ffffff;
+  border: 1px solid #e8edf3;
+  border-radius: 18px;
+  box-shadow: 0 18px 44px rgba(13, 35, 58, 0.14);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tdp-hero2-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  flex: 1 1 520px;
+}
+
+.tdp-hero2-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid #eef2f7;
+  min-width: 0;
+}
+
+.tdp-hero2-fact:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.tdp-hero2-fact .fact-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.tdp-hero2-fact .fact-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0d233a;
+  line-height: 1.35;
+}
+
+.tdp-hero2-fact .fact-value.accent {
+  color: #106da4;
+}
+
+.tdp-hero2-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #0d233a;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.85rem 1.5rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.tdp-hero2-cta:hover {
+  background: #106da4;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 900px) {
+  .tdp-hero2-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tdp-hero2-fact:nth-child(3) {
+    padding-left: 0;
+    border-left: none;
+  }
+  .tdp-hero2-cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .tdp-hero2-media {
+    min-height: 360px;
+    padding: 1.25rem 0 4.5rem;
+  }
+  .tdp-hero2-crumbs {
+    font-size: 0.72rem;
+  }
+  .tdp-hero2-crumbs .active {
+    max-width: 130px;
+  }
+  .tdp-hero2-panel {
+    margin-top: -3rem;
+    padding: 1.1rem 1.15rem;
+    gap: 1.1rem;
+  }
+  .tdp-hero2-facts {
+    gap: 0.9rem;
+  }
+  .tdp-hero2-fact .fact-value {
+    font-size: 0.88rem;
+  }
+}
+
+
+/* ============================================================
+   TOUR DETAIL — THIS TOUR'S SCHEDULE & FREE DATES
+   ============================================================ */
+
+.tdp-schedule-months {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.tdp-schedule-month {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.tdp-schedule-month-pill {
+  background: #0d233a;
+  color: #ffffff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+  min-width: 92px;
+  text-align: center;
+}
+
+.tdp-schedule-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+
+.tdp-schedule-chip {
+  background: #ffffff;
+  color: #0d233a;
+  border: 1px solid #d7e2ec;
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: var(--font-main);
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.15s ease;
+}
+
+.tdp-schedule-chip:hover {
+  background: #e9f7f5;
+  border-color: #29b2b7;
+  color: #0b6f73;
+  transform: translateY(-1px);
+}
+
+.tdp-schedule-chip.is-active {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.tdp-schedule-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.tdp-schedule-legend .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+.tdp-schedule-legend .legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.tdp-schedule-legend .legend-dot.free {
+  background: #ffffff;
+  border: 1px solid #d7e2ec;
+}
+
+.tdp-schedule-legend .legend-dot.picked {
+  background: #10b981;
+}
+
+.tdp-schedule-legend .legend-note {
+  margin-left: auto;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .tdp-schedule-month {
+    padding: 0.75rem;
+    gap: 0.6rem;
+  }
+  .tdp-schedule-month-pill {
+    min-width: auto;
+  }
+  .tdp-schedule-chip {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.5rem;
+  }
+  .tdp-schedule-legend .legend-note {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+
