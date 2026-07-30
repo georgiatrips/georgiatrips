@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import DatePicker from "../../components/DatePicker";
-import { getTourById, getTourDetails, ALL_TOURS } from "../../lib/toursData";
+import { getTourById, getTourDetails, getTourSchedule, ALL_TOURS } from "../../lib/toursData";
 import { WA_LINK, WA_NUMBER, PHONE_DISPLAY, TELEGRAM_HANDLE, TELEGRAM_LINK, INSTAGRAM_HANDLE, INSTAGRAM_LINK, FAQS } from "../../lib/shared";
 
 export default function TourDetailPage() {
@@ -16,6 +16,9 @@ export default function TourDetailPage() {
 
   const rawTour = getTourById(tourId);
   const tour = getTourDetails(rawTour);
+
+  // Free-dates schedule for this specific tour, grouped by month
+  const tourSchedule = getTourSchedule(rawTour?.id);
 
   // Similar tours list (excluding current tour)
   const similarTours = (ALL_TOURS || []).filter((t) => t.id !== rawTour?.id).slice(0, 3);
@@ -122,6 +125,27 @@ export default function TourDetailPage() {
     setExpandedStep(expandedStep === idx ? null : idx);
   };
 
+  // Convert a "DD.MM" schedule chip into a "YYYY-MM-DD" value for the booking form
+  const scheduleDateToIso = (chip) => {
+    const [dd, mm] = String(chip).split(".");
+    if (!dd || !mm) return "";
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const monthIndex = parseInt(mm, 10) - 1;
+    const day = parseInt(dd, 10);
+    let target = new Date(now.getFullYear(), monthIndex, day);
+    if (target < now) target = new Date(now.getFullYear() + 1, monthIndex, day);
+    const yyyy = target.getFullYear();
+    return `${yyyy}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  };
+
+  const pickScheduleDate = (chip) => {
+    const iso = scheduleDateToIso(chip);
+    if (!iso) return;
+    setSelectedDate(iso);
+    scrollToBooking();
+  };
+
   const handleBookingSubmit = (e) => {
     e.preventDefault();
 
@@ -169,52 +193,64 @@ export default function TourDetailPage() {
     <div className="tour-page-wrapper">
       <Navbar active="tours" />
 
-      {/* 1. HERO SHOWCASE SECTION */}
-      <section className="tdp-hero">
-        <div className="tdp-hero-backdrop">
+      {/* 1. HERO SHOWCASE SECTION — editorial media + overlapping info panel */}
+      <section className="tdp-hero2">
+        <div className="tdp-hero2-media">
           <Image
             src={tour.img || "/hero.png"}
             alt={tour.title}
             fill
             priority
+            sizes="100vw"
             style={{ objectFit: "cover" }}
           />
-          <div className="tdp-hero-gradient" />
+          <div className="tdp-hero2-scrim" />
+
+          <div className="container tdp-hero2-topbar">
+            <nav className="tdp-hero2-crumbs" aria-label="ნავიგაცია">
+              <Link href="/">მთავარი</Link>
+              <span className="sep">/</span>
+              <Link href="/tours">ტურები</Link>
+              <span className="sep">/</span>
+              <span className="active">{tour.title}</span>
+            </nav>
+
+            <span className="tdp-hero2-badge">{tour.badge || "პოპულარული ტური"}</span>
+          </div>
+
+          <div className="container tdp-hero2-caption">
+            <span className="tdp-hero2-kicker">{tour.typeLabel || "ერთდღიანი"} ექსკურსია</span>
+            <h1 className="tdp-hero2-title">{tour.title}</h1>
+          </div>
         </div>
 
-        <div className="container tdp-hero-container">
-          <div className="tdp-breadcrumbs">
-            <Link href="/">მთავარი</Link>
-            <span className="sep">/</span>
-            <Link href="/tours">ტურები</Link>
-            <span className="sep">/</span>
-            <span className="active">{tour.title}</span>
-          </div>
-
-          <div className="tdp-hero-badges">
-            <span className="badge-featured">{tour.badge || "პოპულარული ტური"}</span>
-            <span className="badge-type">⏱ {tour.duration || "1 დღე"}</span>
-            <span className="badge-location">📍 {tour.location || "საქართველო"}</span>
-          </div>
-
-          <h1 className="tdp-hero-title">{tour.title}</h1>
-
-          <div className="tdp-hero-stats">
-            <div className="stat-pill">
-              <span className="icon">⏱</span>
-              <div>
-                <small>ხანგრძლივობა</small>
-                <strong>{tour.duration}</strong>
+        <div className="container">
+          <div className="tdp-hero2-panel">
+            <div className="tdp-hero2-facts">
+              <div className="tdp-hero2-fact">
+                <span className="fact-label">ხანგრძლივობა</span>
+                <strong className="fact-value">{tour.duration || "1 დღე"}</strong>
+              </div>
+              <div className="tdp-hero2-fact">
+                <span className="fact-label">მიმართულება</span>
+                <strong className="fact-value">{(tour.location || "საქართველო").replace("📍", "").trim()}</strong>
+              </div>
+              <div className="tdp-hero2-fact">
+                <span className="fact-label">ჯგუფი</span>
+                <strong className="fact-value">1-18 კაცი</strong>
+              </div>
+              <div className="tdp-hero2-fact">
+                <span className="fact-label">ფასი</span>
+                <strong className="fact-value accent">{tour.priceGroup}</strong>
               </div>
             </div>
 
-            <div className="stat-pill">
-              <span className="icon">👥</span>
-              <div>
-                <small>ჯგუფი</small>
-                <strong>1-18 კაცი</strong>
-              </div>
-            </div>
+            <button type="button" className="tdp-hero2-cta" onClick={scrollToBooking}>
+              დაჯავშნა
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </button>
           </div>
         </div>
       </section>
@@ -393,7 +429,56 @@ export default function TourDetailPage() {
               </div>
             </article>
 
-            {/* SECTION 4: PHOTO GALLERY */}
+            {/* SECTION 4: THIS TOUR'S SCHEDULE & FREE DATES */}
+            {tourSchedule.length > 0 && (
+              <article className="tdp-card-block tdp-schedule-block">
+                <div className="tdp-card-header">
+                  <div>
+                    <h2>ამ ტურის განრიგი & თავისუფალი დღეები</h2>
+                    <p className="subtitle">დააწკაპუნეთ თარიღზე — ის ავტომატურად აისახება ჯავშნის ფორმაში</p>
+                  </div>
+                </div>
+
+                <div className="tdp-card-body">
+                  <div className="tdp-schedule-months">
+                    {tourSchedule.map((mGroup) => (
+                      <div key={mGroup.monthName} className="tdp-schedule-month">
+                        <span className="tdp-schedule-month-pill">{mGroup.monthName}</span>
+                        <div className="tdp-schedule-days">
+                          {mGroup.dates.map((d) => {
+                            const iso = scheduleDateToIso(d);
+                            const isActive = iso && iso === selectedDate;
+                            return (
+                              <button
+                                key={d}
+                                type="button"
+                                className={`tdp-schedule-chip${isActive ? " is-active" : ""}`}
+                                onClick={() => pickScheduleDate(d)}
+                                title={`აირჩიეთ ${d} — ${tour.title}`}
+                              >
+                                {d}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="tdp-schedule-legend">
+                    <span className="legend-item">
+                      <i className="legend-dot free" /> თავისუფალი დღე
+                    </span>
+                    <span className="legend-item">
+                      <i className="legend-dot picked" /> არჩეული თარიღი
+                    </span>
+                    <span className="legend-note">სხვა თარიღები — ინდივიდუალური ტურით, შეთანხმებით</span>
+                  </div>
+                </div>
+              </article>
+            )}
+
+            {/* SECTION 5: PHOTO GALLERY */}
             {tour.gallery && tour.gallery.length > 0 && (
               <article className="tdp-card-block">
                 <div className="tdp-card-header">
@@ -699,7 +784,7 @@ export default function TourDetailPage() {
             <div className="tdp-promo-header">
               <span className="tdp-promo-badge">✦ პრემიუმ ექსკურსიები</span>
               <h2 className="tdp-promo-title">
-                ჩვენ გთავაზობთ საუკეთესო ექსკურსიებს სპეციალურად თქვენთვის. დარეგისტრირდით ახლავე და ისიამოვნეთ!
+                ჩვენ გთავაზობთ საუკეთესო ���ქსკურსიებს სპეციალურად თქვენთვის. დარეგისტრირდით ახლავე და ისიამოვნეთ!
               </h2>
               <p className="tdp-promo-subtitle">
                 მოგვწერეთ, ჩვენ ხაზზე ვართ
