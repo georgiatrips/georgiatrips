@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { BrandLogo, WA_LINK, WhatsAppIcon } from "../lib/shared";
+import { useRouter } from "next/navigation";
+import { BrandLogo } from "../lib/shared";
+import { useAuth } from "../lib/AuthContext";
 
 // Shared site navigation. `active` highlights the current top-level item.
 // Supported active values: "home" | "tours" | "transport" | "posts" | "about" | "contact"
@@ -11,8 +13,16 @@ export default function Navbar({ active = "home" }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [activeLang, setActiveLang] = useState("KA");
   const [activeCurrency, setActiveCurrency] = useState("GEL");
+  const { user, logOut } = useAuth() ?? {};
+  const router = useRouter();
+
+  const displayName =
+    user?.displayName ||
+    user?.email?.split("@")[0] ||
+    null;
 
   // Hover-intent: keep a dropdown open briefly after the cursor leaves the
   // trigger so it doesn't close while moving toward the menu items.
@@ -27,15 +37,22 @@ export default function Navbar({ active = "home" }) {
     closeTimers.current[key] = setTimeout(() => setter(false), 220);
   };
 
+  // Pages with a dark full-width hero can afford a fully transparent navbar
+  // at the very top; light pages keep the solid background for readability.
+  const [hasHero, setHasHero] = useState(false);
+
   useEffect(() => {
+    setHasHero(!!document.querySelector(".hero, .tours-page-hero, .transfers-hero, .posts-hero, .tdp-hero2"));
     const handleScroll = () => setNavScrolled(window.scrollY > 50);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isTransparent = hasHero && !navScrolled && !mobileMenuOpen;
+
   return (
-    <nav className={`nav ${navScrolled || mobileMenuOpen ? "scrolled" : ""}`}>
+    <nav className={`nav ${navScrolled || mobileMenuOpen ? "scrolled" : ""} ${isTransparent ? "transparent" : ""}`}>
       {/* Logo */}
       <Link href="/" className="nav-logo" aria-label="GeorgiaTrips — მთავარი">
         <BrandLogo priority />
@@ -99,13 +116,45 @@ export default function Navbar({ active = "home" }) {
           )}
         </div>
 
-        {/* Login Button */}
-        <Link href="/#booking" className="nav-login-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-          </svg>
-          შესვლა
-        </Link>
+        {/* User / Login Button */}
+        {user ? (
+          <div
+            className="nav-control-wrap"
+            onMouseEnter={() => openDropdown(setUserDropdownOpen)}
+            onMouseLeave={() => scheduleClose("user", setUserDropdownOpen)}
+          >
+            <button className="nav-login-btn" style={{ background: "rgba(41,178,183,0.18)", border: "1px solid rgba(41,178,183,0.4)" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+              </svg>
+              <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</span>
+              <svg className={`nav-chevron ${userDropdownOpen ? "open" : ""}`} width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {userDropdownOpen && (
+              <div className="nav-dropdown" style={{ right: 0, left: "auto", minWidth: 160 }}>
+                <button className="nav-dropdown-item" onClick={() => { router.push("/login"); setUserDropdownOpen(false); }}>
+                  პროფილი
+                </button>
+                <button
+                  className="nav-dropdown-item"
+                  onClick={async () => { await logOut?.(); setUserDropdownOpen(false); router.push("/"); }}
+                  style={{ color: "#f87171" }}
+                >
+                  გასვლა
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link href="/login" className="nav-login-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+            </svg>
+            შესვლა
+          </Link>
+        )}
       </div>
 
       {/* Mobile Hamburger */}
@@ -140,9 +189,34 @@ export default function Navbar({ active = "home" }) {
             ))}
           </div>
         </div>
-        <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-          <WhatsAppIcon /> WhatsApp-ზე მოგვწერეთ
-        </a>
+        {user ? (
+          <div className="nav-mobile-user">
+            <div className="nav-mobile-user-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>{displayName}</span>
+            </div>
+            <div className="nav-mobile-user-actions">
+              <Link href="/login" className="nav-mobile-user-btn" onClick={() => setMobileMenuOpen(false)}>
+                პროფილი
+              </Link>
+              <button
+                className="nav-mobile-user-btn nav-mobile-logout"
+                onClick={async () => { await logOut?.(); setMobileMenuOpen(false); router.push("/"); }}
+              >
+                გასვლა
+              </button>
+            </div>
+          </div>
+        ) : (
+          <Link href="/login" className="nav-mobile-login" onClick={() => setMobileMenuOpen(false)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+            </svg>
+            შესვლა / რეგისტრაცია
+          </Link>
+        )}
       </div>
     </nav>
   );
