@@ -172,12 +172,44 @@ export default function PostsPage() {
     setCommentInput("");
   };
 
-  const handleShare = (post) => {
+  const copyToClipboardFallback = (text) => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch {
+      copied = false;
+    }
+    document.body.removeChild(textarea);
+    return copied;
+  };
+
+  const handleShare = async (post) => {
+    const url = window.location.href;
+    let copied = false;
+
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
+      try {
+        await navigator.clipboard.writeText(url);
+        copied = true;
+      } catch {
+        copied = false;
+      }
+    }
+
+    if (!copied) {
+      copied = copyToClipboardFallback(url);
+    }
+
+    if (copied) {
       alert(`პოსტის ბმული დაკოპირდა! გაუზიარეთ მეგობრებს: "${post.title}"`);
     } else {
-      alert(`გაუზიარეთ პოსტი: ${post.title}`);
+      alert(`გაუზიარეთ პოსტი: ${post.title}\n${url}`);
     }
   };
 
