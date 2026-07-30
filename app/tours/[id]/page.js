@@ -37,7 +37,6 @@ export default function TourDetailPage() {
   // Active Itinerary Accordion / Hover Stop state
   const [expandedStep, setExpandedStep] = useState(null);
   const [hoveredStop, setHoveredStop] = useState(null);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -96,17 +95,6 @@ export default function TourDetailPage() {
       }
     }
   }, [tourId]);
-
-  useEffect(() => {
-    // Detect touch / no-hover devices so we can disable the zoom popover on phones
-    if (typeof window !== "undefined" && window.matchMedia) {
-      const mq = window.matchMedia("(hover: none), (pointer: coarse)");
-      const update = () => setIsTouchDevice(mq.matches);
-      update();
-      mq.addEventListener?.("change", update);
-      return () => mq.removeEventListener?.("change", update);
-    }
-  }, []);
 
   useEffect(() => {
     // Show bar only after user scrolls down at least 120px from top,
@@ -326,15 +314,15 @@ export default function TourDetailPage() {
                   <div className="tdp-zigzag-nodes-list">
                     {tour.itinerary && tour.itinerary.map((item, idx) => {
                       const stopImg = item.img || tour.gallery?.[idx % (tour.gallery?.length || 1)] || tour.img;
-                      const isHovered = !isTouchDevice && hoveredStop === idx;
+                      const isHovered = hoveredStop === idx;
                       const isRight = idx % 2 !== 0;
 
                       return (
                         <div
                           key={idx}
                           className={`tdp-zigzag-node-item ${isRight ? "pos-right" : "pos-left"} ${isHovered ? "is-active" : ""}`}
-                          onMouseEnter={isTouchDevice ? undefined : () => setHoveredStop(idx)}
-                          onMouseLeave={isTouchDevice ? undefined : () => setHoveredStop(null)}
+                          onMouseEnter={() => setHoveredStop(idx)}
+                          onMouseLeave={() => setHoveredStop(null)}
                           onClick={() => {
                             const galIdx = tour.gallery?.indexOf(stopImg);
                             openLightbox(galIdx >= 0 ? galIdx : 0);
