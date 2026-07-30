@@ -12340,6 +12340,13 @@ body > .dp-popover,
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tdp-zigzag-node-item {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tdp-zigzag-node-item:hover .tdp-zigzag-dot-btn,
@@ -12417,6 +12424,35 @@ body > .dp-popover,
 @keyframes popoverFadeIn {
   from { opacity: 0; transform: translate(-50%, 10px) scale(0.95); }
   to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* On touch devices (phones/tablets) disable all hover/active zoom effects
+   and the scaling popover — the enlarge animation only runs on desktop mouse hover */
+@media (hover: none), (pointer: coarse) {
+  .tdp-dot-hover-popover {
+    display: none !important;
+  }
+  .tdp-zigzag-node-item:hover .tdp-zigzag-dot-btn,
+  .tdp-zigzag-node-item.is-active .tdp-zigzag-dot-btn {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(16, 109, 164, 0.35);
+    background: linear-gradient(135deg, #106da4 0%, #29b2b7 100%);
+  }
+  .tdp-zigzag-node-item:hover .zigzag-dot-num,
+  .tdp-zigzag-node-item.is-active .zigzag-dot-num {
+    color: #ffffff;
+  }
+  .tdp-zigzag-node-item:hover .zigzag-dot-ring,
+  .tdp-zigzag-node-item.is-active .zigzag-dot-ring {
+    transform: none;
+    background: rgba(41, 178, 183, 0.25);
+  }
+  .tdp-zigzag-node-item:hover .tdp-zigzag-label,
+  .tdp-zigzag-node-item.is-active .tdp-zigzag-label {
+    transform: none;
+    border-color: var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
 }
 
 .popover-triangle {
