@@ -21,46 +21,42 @@ export default function TransfersPage() {
     {
       id: "sedan",
       name: "სედანი",
-      subtitle: "კომფორტული მგზავრობა პირად მძღოლთან ერთად",
+      subtitle: "მძღოლით",
       capacity: "მაქსიმუმ 3 მგზავრი",
       paxNum: 3,
       img: "1car.webp",
       fallbackImg: "/car1.png",
-      badge: "ეკონომი & კომფორტი",
-      features: ["ჩვენი პროფესიონალი მძღოლი გემსახურებათ", "კონდიციონერი & უფასო წყალი", "3x ჩემოდანი", "დახვედრა ნებისმიერ ლოკაციაზე"]
+      badge: "ეკონომი & კომფორტი"
     },
     {
       id: "minivan",
       name: "მინივენი",
-      subtitle: "იდეალური ოჯახებისა და მეგობრებისთვის",
+      subtitle: "მძღოლით",
       capacity: "მაქსიმუმ 6 მგზავრი",
       paxNum: 6,
       img: "2car.webp",
       fallbackImg: "/car2.png",
-      badge: "ყველაზე მოთხოვნადი",
-      features: ["ჩვენი გამოცდილი მძღოლი მთელი მგზავრობისას", "ორმაგი კონდიციონერი", "6x ჩემოდანი", "კომფორტული სავარძლები"]
+      badge: "ყველაზე მოთხოვნადი"
     },
     {
       id: "jeep",
       name: "ჯიპი",
-      subtitle: "Jeep Wrangler — სამთო მარშრუტებისთვის",
-      capacity: "მაქსიმუმ 4 მგზავრი",
-      paxNum: 4,
+      subtitle: "მძღოლით",
+      capacity: "მაქსიმუმ 3 მგზავრი",
+      paxNum: 3,
       img: "/jeep-wrangler.png",
       fallbackImg: "/jeep-wrangler.png",
-      badge: "სათავგადასავლო",
-      features: ["ჩვენი მძღოლი მართავს რთულ სამთო გზებზეც", "სრული 4x4 გამავლობა", "ყაზბეგი, თუშეთი, სვანეთი", "უსაფრთხო მგზავრობა ნებისმიერ ამინდში"]
+      badge: "სათავგადასავლო"
     },
     {
       id: "sprinter",
       name: "სპრინტერი",
-      subtitle: "დიდი ჯგუფების კომფორტული გადაყვანა",
+      subtitle: "მძღოლით",
       capacity: "მაქსიმუმ 16 მგზავრი",
       paxNum: 16,
       img: "4car.webp",
       fallbackImg: "/car4.png",
-      badge: "დიდი ჯგუფებისთვის",
-      features: ["ჩვენი პროფესიონალი მძღოლი გემსახურებათ", "ტურისტული სავარძლები & მაღალი ჭერი", "დიდი საბარგული", "აუდიო-ვიდეო სისტემა"]
+      badge: "დიდი ჯგუფებისთვის"
     }
   ];
 
@@ -130,12 +126,6 @@ export default function TransfersPage() {
           <p className="transfers-hero-sub">
             აეროპორტის დახვედრა 24/7 და საქალაქთაშორისო ტრანსფერები — ყველა ავტომობილს ჩვენი პროფესიონალი მძღოლი მართავს და გემსახურებათ მთელი მგზავრობის განმავლობაში.
           </p>
-          <div className="transfers-hero-pills">
-            <span className="th-pill">🚗 სედანი & მინივენი</span>
-            <span className="th-pill">🚙 Jeep Wrangler</span>
-            <span className="th-pill">🚐 სპრინტერი</span>
-            <span className="th-pill">🛫 24/7 აეროპორტი</span>
-          </div>
         </div>
       </section>
 
@@ -172,15 +162,6 @@ export default function TransfersPage() {
                       <span className="fleet-card-sub">{car.subtitle}</span>
                     </div>
                   </div>
-
-                  <ul className="fleet-features-list">
-                    {car.features.map((feat, fIdx) => (
-                      <li key={fIdx}>
-                        <span className="feat-check">✓</span>
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
 
                   <button
                     type="button"
