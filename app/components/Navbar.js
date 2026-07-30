@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BrandLogo, WA_LINK, WhatsAppIcon } from "../lib/shared";
+import { BrandLogo } from "../lib/shared";
 import { useAuth } from "../lib/AuthContext";
 
 // Shared site navigation. `active` highlights the current top-level item.
@@ -210,9 +210,6 @@ export default function Navbar({ active = "home" }) {
             შესვლა / რეგისტრაცია
           </Link>
         )}
-        <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-          <WhatsAppIcon /> WhatsApp-ზე მოგვწერეთ
-        </a>
       </div>
     </nav>
   );
