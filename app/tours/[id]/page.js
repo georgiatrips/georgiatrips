@@ -916,12 +916,12 @@ export default function TourDetailPage() {
         <div className="tdp-promo-contact-container">
           <div className="tdp-promo-contact-card">
             <div className="tdp-promo-header">
-              <span className="tdp-promo-badge">✦ პრემიუმ ექსკურსიები</span>
+              <span className="tdp-promo-badge">დაგვიკავშირდით</span>
               <h2 className="tdp-promo-title">
-                ჩვენ გთავაზობთ საუკეთესო ���ქსკურსიებს სპეციალურად თქვენთვის. დარეგისტრირდით ახლავე და ისიამოვნეთ!
+                დაგეგმეთ თქვენი დაუვიწყარი მოგზაურობა ჩვენთან ერთად
               </h2>
               <p className="tdp-promo-subtitle">
-                მოგვწერეთ, ჩვენ ხაზზე ვართ
+                მოგვწერეთ ნებისმიერ დროს
               </p>
             </div>
 

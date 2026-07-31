@@ -183,7 +183,7 @@ const SECTIONS_DATA = [
   },
   {
     id: "nature",
-    title: "მთიანი აჭარა",
+    title: "მთის ტურები და ბუნება",
     tours: [
       {
         img: IMAGES.kazbegi,
@@ -746,7 +746,6 @@ export default function Home() {
 
         <div className="hero-content">
           <div className="hero-badge">
-            <span>✦</span>
             <span>Georgia Trips — Travel Company</span>
           </div>
 
@@ -1317,53 +1316,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ==================== WHY GEORGIA SECTION ==================== */}
-      <section className="section" id="why">
-        <div className="section-inner">
-          <div className="why-wrap">
-            <div className="why-visual">
-              <div className="why-img-main">
-                <Image src={IMAGES.hero} alt="საქართველო" width={550} height={480} loading="lazy" />
-              </div>
-              <div className="why-img-accent">
-                <Image src={IMAGES.tbilisi} alt="თბილისი" width={180} height={180} loading="lazy" />
-              </div>
-              <div className="why-badge-float">
-                <div className="badge-icon">🏆</div>
-                <div className="badge-text">
-                  <strong>500+ კმაყოფილი</strong>
-                  <span>ტურისტი წელს</span>
-                </div>
-              </div>
-            </div>
-            <div className="why-content">
-              <div className="section-header">
-                <span className="section-eyebrow">რატომ საქართველო?</span>
-                <h2 className="section-title">კავკასიის ჯადოსნური ქვეყანა</h2>
-                <p className="section-desc">ეს ქვეყანა გთავაზობს ყველაფერს — ისტორიას, ბუნებას, ღვინოს და გამორჩეულ სტუმართმოყვარეობას.</p>
-                <div className="gold-line"></div>
-              </div>
-              <div className="why-features">
-                {[
-                  { icon: "✈️", title: "უვიზო რეჟიმი", desc: "მოგზაურობა უვიზოდ ბევრი ქვეყნის მოქალაქისთვის — სწრაფი და მარტივი." },
-                  { icon: "🛡️", title: "უსაფრთხო ქვეყანა", desc: "სტატისტიკურად ერთ-ერთი ყველაზე უსაფრთხო და მეგობრული ქვეყანა ევროპაში." },
-                  { icon: "🍽️", title: "ჰალალ საკვები ხელმისაწვდომია", desc: "უგემრიელესი ჰალალ სამზარეულო თბილისში, ბათუმსა და კურორტებზე." },
-                  { icon: "🕐", title: "24/7 მხარდაჭერა", desc: "ჩვენი გუნდი მზადაა დაგეხმაროთ ნებისმიერ დროს ნებისმიერ საკითხზე." },
-                  { icon: "💎", title: "ლუქს კლასის სერვისები", desc: "კერძო ვილებიდან დაწყებული, ვერტმფრენის ტურებით დასრულებული." }
-                ].map((item, idx) => (
-                  <div key={idx} className="why-feature">
-                    <div className="why-feature-icon">{item.icon}</div>
-                    <div className="why-feature-text">
-                      <h4>{item.title}</h4>
-                      <p>{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ==================== GALLERY SECTION (SOCIAL MEDIA FEED) ==================== */}
       <section className="section gallery-bg" id="gallery">
