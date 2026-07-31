@@ -1,0 +1,86 @@
+/* ============================================================
+   Hotels page — placeholder shell
+   ============================================================ */
+
+.htl-wrap {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 130px 20px 90px;
+  min-height: 70vh;
+}
+
+.htl-head {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 36px;
+}
+
+.htl-eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-teal);
+  background: var(--bg-accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 16px;
+  margin-bottom: 16px;
+}
+
+.htl-head h1 {
+  font-family: var(--font-head);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  line-height: 1.25;
+  color: var(--text-dark);
+}
+
+.htl-head p {
+  margin-top: 12px;
+  color: var(--text-mute);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.htl-panel {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 40px 28px;
+  text-align: center;
+}
+
+.htl-panel-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-accent);
+  color: var(--text-teal);
+}
+
+.htl-panel h2 {
+  font-family: var(--font-head);
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.htl-panel p {
+  color: var(--text-mute);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 700px) {
+  .htl-wrap {
+    padding-top: 105px;
+  }
+}
