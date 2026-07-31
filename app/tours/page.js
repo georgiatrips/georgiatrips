@@ -8,10 +8,15 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import DatePicker from "../components/DatePicker";
 import { ALL_TOURS, DESTINATIONS } from "../lib/toursData";
+import { useDynamicTours } from "../lib/useDynamicTours";
 import { WA_LINK } from "../lib/shared";
 
 function ToursPageContent() {
   const searchParams = useSearchParams();
+
+  // Tours created in the admin panel (Firestore) come first, then the static ones
+  const { tours: dynamicTours } = useDynamicTours();
+  const catalogTours = useMemo(() => [...dynamicTours, ...ALL_TOURS], [dynamicTours]);
 
   const [selectedDestination, setSelectedDestination] = useState("all");
   const [selectedType, setSelectedType] = useState("all"); // "all" | "oneday" | "multiday"
@@ -22,11 +27,11 @@ function ToursPageContent() {
 
   const allAvailableDates = useMemo(() => {
     const datesSet = new Set();
-    ALL_TOURS.forEach((t) => {
+    catalogTours.forEach((t) => {
       if (t.dates) t.dates.forEach((d) => datesSet.add(d));
     });
     return Array.from(datesSet);
-  }, []);
+  }, [catalogTours]);
 
   // Sync state with URL Search Params on mount or when URL changes
   useEffect(() => {
@@ -41,7 +46,7 @@ function ToursPageContent() {
 
   // Filtering Logic
   const filteredTours = useMemo(() => {
-    return ALL_TOURS.filter((tour) => {
+    return catalogTours.filter((tour) => {
       // 1. Destination filter
       if (selectedDestination !== "all" && tour.destination !== selectedDestination) {
         return false;
@@ -82,7 +87,7 @@ function ToursPageContent() {
 
       return true;
     });
-  }, [selectedDestination, selectedType, selectedFormat, selectedDate, searchQuery]);
+  }, [catalogTours, selectedDestination, selectedType, selectedFormat, selectedDate, searchQuery]);
 
   const resetFilters = () => {
     setSelectedDestination("all");

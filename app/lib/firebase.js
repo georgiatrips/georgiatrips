@@ -1,5 +1,6 @@
 // Firebase Configuration & Auth Helpers
 import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 import {
   getAuth,
   signInWithPopup,
@@ -26,6 +27,8 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+// Cloud Firestore — stores admin-created tours ("tours" collection)
+export const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();

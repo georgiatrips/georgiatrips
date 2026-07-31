@@ -66,8 +66,10 @@ export default function Navbar({ active = "home" }) {
       <ul className="nav-links">
         <li><Link href="/">მთავარი</Link></li>
         <li><Link href="/tours" className={active === "tours" ? "active" : ""}>ტურები</Link></li>
+        <li><Link href="/hotels" className={active === "hotels" ? "active" : ""}>სასტუმროები</Link></li>
         <li><Link href="/transfers" className={active === "transfers" || active === "transport" ? "active" : ""}>ტრანსპორტი</Link></li>
         <li><Link href="/posts" className={active === "posts" || active === "articles" ? "active" : ""}>სტატიები</Link></li>
+        <li><Link href="/admin" className={active === "admin" ? "active" : ""}>ადმინის პანელი</Link></li>
       </ul>
 
       {/* Right Side Controls */}
@@ -173,8 +175,10 @@ export default function Navbar({ active = "home" }) {
       <div className={`nav-mobile ${mobileMenuOpen ? "open" : ""}`}>
         <Link href="/" onClick={() => setMobileMenuOpen(false)}>მთავარი</Link>
         <Link href="/tours" onClick={() => setMobileMenuOpen(false)}>ტურები</Link>
+        <Link href="/hotels" onClick={() => setMobileMenuOpen(false)}>სასტუმროები</Link>
         <Link href="/transfers" onClick={() => setMobileMenuOpen(false)}>ტრანსპორტი</Link>
         <Link href="/posts" onClick={() => setMobileMenuOpen(false)}>სტატიები</Link>
+        <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>ადმინის პანელი</Link>
         <div className="nav-mobile-controls">
           <div className="nav-mobile-ctrl-row">
             <span>ენა:</span>

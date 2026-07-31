@@ -1,0 +1,701 @@
+/* ============================================================
+   Admin Panel — tour management
+   Uses the global GeorgiaTrips tokens (blue / teal / yellow)
+   ============================================================ */
+
+.adm-page {
+  min-height: 100vh;
+  background: var(--bg-main);
+  padding: 120px 20px 80px;
+}
+
+.adm-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ---------- Header ---------- */
+.adm-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 26px 28px;
+  background: linear-gradient(135deg, #0f172a 0%, #106da4 100%);
+  border-radius: var(--radius-lg);
+  color: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.adm-header h1 {
+  font-family: var(--font-head);
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.adm-header p {
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.55;
+  max-width: 52ch;
+}
+
+.adm-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ---------- Card / Section ---------- */
+.adm-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.adm-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-accent);
+}
+
+.adm-card-head .adm-step {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.adm-card-head h2 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.adm-card-head span.adm-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-mute);
+  line-height: 1.5;
+}
+
+.adm-card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- Grid + fields ---------- */
+.adm-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 720px) {
+  .adm-grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .adm-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.adm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.adm-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.adm-field small {
+  font-size: 0.76rem;
+  color: var(--text-mute);
+  line-height: 1.5;
+}
+
+.adm-field input[type="text"],
+.adm-field input[type="number"],
+.adm-field select,
+.adm-field textarea,
+.adm-inline-input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--text-dark);
+  font-family: var(--font-main);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.adm-field textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.adm-field input:focus,
+.adm-field select:focus,
+.adm-field textarea:focus,
+.adm-inline-input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(41, 178, 183, 0.16);
+}
+
+/* ---------- Segmented control (one-day / multi-day) ---------- */
+.adm-segment {
+  display: flex;
+  gap: 8px;
+  padding: 5px;
+  background: var(--bg-accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.adm-segment button {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-mute);
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.adm-segment button.is-active {
+  background: var(--blue);
+  color: var(--white);
+  box-shadow: 0 4px 12px -4px rgba(16, 109, 164, 0.6);
+}
+
+/* ---------- Price tier checkboxes ---------- */
+.adm-tiers {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 780px) {
+  .adm-tiers {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.adm-tier {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: var(--transition);
+}
+
+.adm-tier.is-on {
+  border-color: var(--teal);
+  box-shadow: var(--shadow-brand);
+}
+
+.adm-tier.vip.is-on {
+  border-color: var(--yellow);
+  box-shadow: 0 4px 24px rgba(250, 180, 24, 0.22);
+}
+
+.adm-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  user-select: none;
+}
+
+.adm-check input[type="checkbox"] {
+  width: 19px;
+  height: 19px;
+  accent-color: var(--teal);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.adm-tier-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-tier-price .adm-currency {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-teal);
+}
+
+.adm-tier[aria-disabled="true"] .adm-tier-price {
+  opacity: 0.45;
+}
+
+/* ---------- Route / itinerary rows ---------- */
+.adm-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.adm-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-row-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-row-index {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--teal);
+  color: var(--white);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.adm-icon-btn {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--text-mute);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.adm-icon-btn:hover {
+  color: var(--white);
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.adm-icon-btn.danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.adm-icon-btn.add {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--white);
+}
+
+.adm-icon-btn.add:hover {
+  background: var(--text-teal);
+  border-color: var(--text-teal);
+}
+
+.adm-row-media {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.adm-thumb {
+  width: 72px;
+  height: 54px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: var(--bg-accent);
+}
+
+/* ---------- Upload ---------- */
+.adm-upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1.5px dashed var(--teal);
+  border-radius: var(--radius-sm);
+  background: rgba(41, 178, 183, 0.06);
+  color: var(--text-teal);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.adm-upload:hover {
+  background: rgba(41, 178, 183, 0.14);
+}
+
+.adm-upload input {
+  display: none;
+}
+
+.adm-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.adm-gallery-item {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: var(--bg-accent);
+  aspect-ratio: 4 / 3;
+}
+
+.adm-gallery-item.is-cover {
+  border-color: var(--yellow);
+}
+
+.adm-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adm-gallery-actions {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.85), transparent);
+}
+
+.adm-mini-btn {
+  flex: 1;
+  padding: 5px 6px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-dark);
+  font-family: var(--font-main);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adm-mini-btn.danger {
+  background: rgba(220, 38, 38, 0.92);
+  color: var(--white);
+}
+
+.adm-cover-flag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: #0f172a;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+/* ---------- Departures ---------- */
+.adm-date-adder {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.adm-date-adder .adm-field {
+  flex: 1 1 220px;
+}
+
+.adm-dep-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adm-dep {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-main);
+}
+
+.adm-dep-date {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-dark);
+  min-width: 130px;
+}
+
+.adm-dep-seats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.adm-dep-seats label {
+  font-size: 0.8rem;
+  color: var(--text-mute);
+}
+
+.adm-dep-seats input {
+  width: 86px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+}
+
+/* ---------- Schedule preview ---------- */
+.adm-preview {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.adm-preview h3 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.adm-preview-month {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adm-month-pill {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.adm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--white);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.adm-chip b {
+  color: var(--text-teal);
+}
+
+.adm-chip.is-full b {
+  color: #dc2626;
+}
+
+/* ---------- Footer actions ---------- */
+.adm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-main);
+  font-size: 0.94rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.adm-btn.primary {
+  background: linear-gradient(135deg, var(--blue), var(--teal));
+  color: var(--white);
+  box-shadow: 0 10px 24px -12px rgba(16, 109, 164, 0.9);
+}
+
+.adm-btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.adm-btn.ghost {
+  background: var(--bg-accent);
+  color: var(--text-dark);
+}
+
+.adm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.adm-status {
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.adm-status.ok {
+  color: #047857;
+}
+
+.adm-status.err {
+  color: #dc2626;
+}
+
+/* ---------- Existing tours table ---------- */
+.adm-tour-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-tour-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+}
+
+.adm-tour-item img {
+  width: 84px;
+  height: 62px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.adm-tour-meta {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.adm-tour-meta strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.adm-tour-meta span {
+  font-size: 0.8rem;
+  color: var(--text-mute);
+  line-height: 1.5;
+}
+
+.adm-tour-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.adm-empty {
+  padding: 26px;
+  text-align: center;
+  color: var(--text-mute);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .adm-page {
+    padding: 100px 14px 60px;
+  }
+
+  .adm-card-body {
+    padding: 18px 16px;
+  }
+}
