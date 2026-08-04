@@ -14,7 +14,6 @@ import { groupDepartureDates } from "./lib/toursFirestore";
 import { listPlaces } from "./lib/placesFirestore";
 import { GEORGIA_REGIONS } from "./lib/placesMeta";
 import { listPosts } from "./lib/postsFirestore";
-import { listReviews } from "./lib/reviewsFirestore";
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
 
@@ -310,7 +309,7 @@ const SECTIONS_DATA = [
     tours: [
       {
         img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
-        badge: "5★ VIP ექსკლ���ზივი",
+        badge: "5★ VIP ექსკ������ზივი",
         priceGroup: "₾800/კაცი",
         pricePrivate: "₾2200",
         dates: ["07.27", "07.29", "08.02"],
@@ -582,7 +581,6 @@ const ICONS = {
 
 export default function Home() {
   const [navScrolled, setNavScrolled] = useState(false);
-  const [activeReviewSlide, setActiveReviewSlide] = useState(0);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
   const [showAllSocial, setShowAllSocial] = useState(false);
@@ -593,9 +591,6 @@ export default function Home() {
   const [popTourSlide, setPopTourSlide] = useState(0);
   const [places, setPlaces] = useState([]);
   const [posts, setPosts] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [reviewsLoading, setReviewsLoading] = useState(true);
-  const [reviewsMeta, setReviewsMeta] = useState({ rating: null, totalReviews: null, googleMapsUri: "" });
 
   useEffect(() => {
     let active = true;
@@ -610,70 +605,6 @@ export default function Home() {
     listPosts()
       .then((items) => { if (active) setPosts(items.slice(0, 6)); })
       .catch((error) => console.error("Failed to load posts for homepage", error));
-    return () => { active = false; };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    const loadGoogleReviews = async () => {
-      try {
-        const res = await fetch("/api/google-reviews");
-        const payload = await res.json();
-        const googleReviews = payload?.data?.reviews || [];
-        if (payload?.error) {
-          console.warn("[v0] Google reviews unavailable:", payload.message, payload.diagnostics);
-        }
-        if (active) {
-          setReviewsMeta({
-            rating: payload?.data?.rating ?? null,
-            totalReviews: payload?.data?.totalReviews ?? null,
-            googleMapsUri: payload?.data?.googleMapsUri || "",
-          });
-        }
-        return googleReviews.map((review, index) => ({
-          id: review.googleReviewId || `google-${index}`,
-          name: review.name,
-          rating: Number(review.rating) || 5,
-          text: review.text || "",
-          time: review.time || review.relativeTime || "",
-          avatar: review.avatar || "",
-          source: "google",
-          googleReviewId: review.googleReviewId || "",
-          reviewDate: review.originalTimestamp
-            ? new Date(review.originalTimestamp * 1000).toISOString()
-            : new Date(0).toISOString(),
-        }));
-      } catch (error) {
-        console.error("Failed to load Google reviews for homepage", error);
-        return [];
-      }
-    };
-
-    const loadFirestoreReviews = async () => {
-      try {
-        return await listReviews();
-      } catch (error) {
-        console.error("Failed to load reviews for homepage", error);
-        return [];
-      }
-    };
-
-    Promise.all([loadGoogleReviews(), loadFirestoreReviews()])
-      .then(([googleReviews, savedReviews]) => {
-        if (!active) return;
-        // Google-იდან წაკითხულს ვანიჭებთ პრიორიტეტს, დანარჩენს ვამატებთ (დუბლიკატების გარეშე)
-        const seen = new Set(googleReviews.map((review) => review.googleReviewId).filter(Boolean));
-        const extras = savedReviews.filter(
-          (review) => !review.googleReviewId || !seen.has(review.googleReviewId)
-        );
-        const merged = [...googleReviews, ...extras].sort(
-          (a, b) => new Date(b.reviewDate || 0).getTime() - new Date(a.reviewDate || 0).getTime()
-        );
-        setReviews(merged);
-      })
-      .finally(() => { if (active) setReviewsLoading(false); });
-
     return () => { active = false; };
   }, []);
 
@@ -807,7 +738,7 @@ export default function Home() {
   // Scroll-reveal animation for all sections
   useEffect(() => {
     const targets = document.querySelectorAll(
-      ".section-header, .categories-grid, .why-wrap, .booking-wrap, .weather-wrap, .map-wrap, .reviews-slider, .social-feed-grid, .stats-grid, .faq-list, .batumi-section-header, .intl-header, .google-reviews-header"
+      ".section-header, .categories-grid, .why-wrap, .booking-wrap, .weather-wrap, .map-wrap, .social-feed-grid, .stats-grid, .faq-list, .batumi-section-header, .intl-header"
     );
 
     targets.forEach((el) => el.classList.add("reveal"));
@@ -1318,7 +1249,7 @@ export default function Home() {
             <span className="schedule-eyebrow">თავისუფალი თარიღების განრიგი</span>
             <h2 className="themed-section-title">ტურების განრიგი & თავისუფალი დღეები</h2>
             <p className="schedule-subdesc">
-              დაგეგმეთ თქვენი მოგზაურობა წინასწარ — იხილეთ ტურების უახლოესი თავისუფალი თარიღები და დააჭირეთ დასაჯავშნად.
+              დაგეგმეთ თქვენი მოგზაურობა წინასწ��რ — იხილეთ ტურების უახლოესი თავისუფალი თარიღები და დააჭირეთ დასაჯავშნად.
             </p>
           </div>
 
@@ -1514,134 +1445,6 @@ export default function Home() {
       </section>
 
 
-      {/* ==================== GOOGLE MAPS REVIEWS SECTION ==================== */}
-      <section className="google-reviews-section" id="google-reviews">
-        <div className="google-reviews-container">
-          <div className="google-reviews-header">
-            <span className="section-eyebrow">ჩვენი სტუმრები ამბობენ</span>
-            <h2 className="section-title">მიმოხილვები</h2>
-            <p className="section-desc">ნახე, რას ამბობენ ჩვენი სტუმრები ახლო აღმოსავლეთიდან</p>
-            <div className="gold-line"></div>
-          </div>
-
-          {reviewsLoading ? (
-            <div className="google-reviews-grid">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="google-review-card" style={{ opacity: 0.6 }}>
-                  <div className="review-rating">
-                    <div className="review-stars">
-                      {[...Array(5)].map((_, j) => (
-                        <span key={j} className="star filled">★</span>
-                      ))}
-                    </div>
-                    <span className="review-stars-text">5.0</span>
-                  </div>
-                  <p className="review-text">იტვირთება...</p>
-                  <div className="review-author-row">
-                    <div className="review-author-avatar" style={{ background: "#e0e0e0" }}></div>
-                    <div className="review-author-info">
-                      <strong className="review-author-name">...</strong>
-                      <span className="review-author-time">...</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : reviews.length > 0 ? (
-            <div className="google-reviews-horizontal">
-              <button
-                className="reviews-h-arrow reviews-h-arrow-left"
-                onClick={() => setActiveReviewSlide((prev) => Math.max(0, prev - 1))}
-                aria-label="წინა მიმოხილვა"
-                disabled={activeReviewSlide === 0}
-              >
-                ‹
-              </button>
-              <div className="google-reviews-h-viewport">
-                <div className="google-reviews-h-track" style={{ transform: `translateX(-${activeReviewSlide * 100}%)` }}>
-                  {reviews.map((review) => (
-                    <div key={review.id} className="google-review-card google-review-card-single">
-                      <div className="review-rating">
-                        <div className="review-stars">
-                          {[...Array(5)].map((_, i) => (
-                            <span
-                              key={i}
-                              className={`star ${i < review.rating ? "filled" : "outline"}`}
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                        <span className="review-stars-text">{review.rating}.0</span>
-                      </div>
-
-                      <p className="review-text">
-                        {review.text.length > 180
-                          ? review.text.slice(0, 180) + "..."
-                          : review.text}
-                      </p>
-
-                      <div className="review-author-row">
-                        {review.avatar ? (
-                          <img
-                            src={review.avatar}
-                            alt={review.name}
-                            className="review-author-avatar"
-                            onError={(e) => {
-                              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.name)}&background=29b2b7&color=fff&font-size=0.5`;
-                            }}
-                          />
-                        ) : (
-                          <div className="review-author-avatar" style={{ background: "#29b2b7", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600 }}>
-                            {review.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div className="review-author-info">
-                          <strong className="review-author-name">{review.name}</strong>
-                          <span className="review-author-time">{review.time}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <button
-                className="reviews-h-arrow reviews-h-arrow-right"
-                onClick={() => setActiveReviewSlide((prev) => Math.min(reviews.length - 1, prev + 1))}
-                aria-label="შემდეგი მიმოხილვა"
-                disabled={activeReviewSlide === reviews.length - 1}
-              >
-                ›
-              </button>
-            </div>
-          ) : (
-            <div className="google-reviews-grid">
-              <div className="google-review-card" style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem" }}>
-                <p className="review-text">მიმოხილვები ჯერ არ არის დამატებული.</p>
-              </div>
-            </div>
-          )}
-
-          <div className="google-reviews-cta">
-            <a
-              href={reviewsMeta.googleMapsUri || "https://www.google.com/maps/search/?api=1&query=GeorgiaTrips"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="google-cta-btn"
-            >
-              <svg className="google-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.54 5.54 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z" />
-                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24z" />
-                <path fill="#FBBC05" d="M5.27 14.29a7.2 7.2 0 0 1 0-4.58V6.62H1.29a11.99 11.99 0 0 0 0 10.76l3.98-3.09z" />
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.7 0 3.99 2.47 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z" />
-              </svg>
-              ყველა მიმოხილვები Google Maps-ზე
-            </a>
-          </div>
-        </div>
-      </section>
-
-
       {/* ==================== GEORGIA MAP SECTION ==================== */}
       <section className="section map-section" id="map">
 
@@ -1666,7 +1469,7 @@ export default function Home() {
                   { id: "GE-IM", name: "იმერეთი", desc: "ქუთაისი, ისტორიული ცენტრი", color: "#106da4" },
                   { id: "GE-KA", name: "კახეთი", desc: "ქართული ღვინის სამეფო", color: "#fab418" },
                   { id: "GE-KK", name: "ქვემო ქართლი", desc: "მრავალფეროვანი კულტურა", color: "#106da4" },
-                  { id: "GE-MM", name: "მცხეთა-მთიანეთი", desc: "ყაზბეგი, გერგეთი, ჯვარი", color: "#29b2b7" },
+                  { id: "GE-MM", name: "მცხეთა-მთიანეთი", desc: "ყაზბეგი, გერგეთი, ჯ���არი", color: "#29b2b7" },
                   { id: "GE-RL", name: "რაჭა-ლეჩხუმი", desc: "მთიანი სილამაზე", color: "#106da4" },
                   { id: "GE-SJ", name: "სამცხე-ჯავახეთი", desc: "ვარძია, ბორჯომი", color: "#29b2b7" },
                   { id: "GE-SK", name: "შიდა ქართლი", desc: "გორი, ქართული ვაკე", color: "#fab418" },
@@ -1738,61 +1541,6 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ==================== REVIEWS SECTION ==================== */}
-      <section className="section reviews-bg" id="reviews">
-        <div className="section-inner">
-          <div className="section-header">
-            <span className="section-eyebrow">ჩვენი სტუმრები ამბობენ</span>
-            <h2 className="section-title">მიმოხილვები</h2>
-            <p className="section-desc">ნახე, რას ამბობენ ჩვენი სტუმრები ახლო აღმოსავლეთიდან</p>
-            <div className="gold-line"></div>
-          </div>
-          {reviews.length > 0 ? (
-            <>
-              <div className="reviews-horizontal">
-                <button
-                  className="reviews-h-arrow reviews-h-arrow-left"
-                  onClick={() => setActiveReviewSlide((prev) => Math.max(0, prev - 1))}
-                  aria-label="წინა მიმოხილვა"
-                  disabled={activeReviewSlide === 0}
-                >
-                  ‹
-                </button>
-                <div className="reviews-h-viewport">
-                  <div className="reviews-h-track" style={{ transform: `translateX(-${activeReviewSlide * 360}px)` }}>
-                    {reviews.map((r) => (
-                      <div key={r.id} className="review-card review-card-horizontal">
-                        <div className="review-stars">★★★★★</div>
-                        <p className="review-text">“{r.text}”</p>
-                        <div className="review-author">
-                          <div className="review-avatar">{r.name.charAt(0).toUpperCase()}</div>
-                          <div className="review-author-info">
-                            <strong>{r.name}</strong>
-                            <span>{r.time}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  className="reviews-h-arrow reviews-h-arrow-right"
-                  onClick={() => setActiveReviewSlide((prev) => Math.min(reviews.length - 1, prev + 1))}
-                  aria-label="შემდეგი მიმოხილვა"
-                  disabled={activeReviewSlide === reviews.length - 1}
-                >
-                  ›
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="review-text" style={{ textAlign: "center", padding: "2rem" }}>
-              მიმოხილვები ჯერ არ არის დამატებული.
-            </p>
-          )}
         </div>
       </section>
 

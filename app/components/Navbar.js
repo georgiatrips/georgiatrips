@@ -127,17 +127,6 @@ export default function Navbar({ active = "home" }) {
             onMouseLeave={() => scheduleClose("user", setUserDropdownOpen)}
           >
             <button className="nav-login-btn nav-user-badge">
-              <img
-                src={user?.photoURL || ""}
-                alt=""
-                className="nav-user-avatar"
-                style={{ display: user?.photoURL ? "inline-block" : "none" }}
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  const icon = e.currentTarget.nextElementSibling;
-                  if (icon) icon.style.display = "inline-flex";
-                }}
-              />
               <svg
                 width="14"
                 height="14"
@@ -147,7 +136,7 @@ export default function Navbar({ active = "home" }) {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ display: user?.photoURL ? "none" : "inline-flex" }}
+                aria-hidden="true"
               >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>

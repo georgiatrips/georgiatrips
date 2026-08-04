@@ -10,7 +10,7 @@ import { GEORGIA_REGIONS } from "../lib/placesMeta";
 import { listPlaces } from "../lib/placesFirestore";
 import { TOUR_BADGE_OPTIONS, TOUR_SECTIONS } from "../lib/tourMeta";
 import PlaceManager from "./PlaceManager";
-import ReviewManager from "./ReviewManager";
+import HotelManager from "./HotelManager";
 import { useAuth } from "../lib/AuthContext";
 import {
   createTour,
@@ -588,7 +588,7 @@ export default function AdminPage() {
                 <input type="checkbox" checked={isPopular} onChange={(e) => setIsPopular(e.target.checked)} />
                 <span>პოპულარული ტური — გამოჩნდეს მთავარ გვერდზე</span>
               </label>
-              <p className="admin-hint">სად უნდა გამოჩნდეს ტური — აირჩიეთ შესაბამისი სექცია.</p>
+              <p className="admin-hint">სად უნდა გამოჩნდეს ტური — აირჩიეთ შ��საბამისი სექცია.</p>
               <div className="admin-section-grid">
                 <button
                   type="button"
@@ -747,7 +747,7 @@ export default function AdminPage() {
                         type="button"
                         className="admin-gallery-remove"
                         onClick={() => removeGalleryImage(idx)}
-                        aria-label="წაშლა"
+                        aria-label="წა��ლა"
                       >
                         ×
                       </button>
@@ -863,7 +863,7 @@ export default function AdminPage() {
 
       <section className="admin-section">
         <div className="container">
-          <ReviewManager />
+          <HotelManager />
         </div>
       </section>
 

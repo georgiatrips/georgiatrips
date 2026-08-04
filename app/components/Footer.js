@@ -42,7 +42,7 @@ export default function Footer() {
               <li><Link href="/#tours">თბილისის ტური</Link></li>
               <li><Link href="/#tours">კახეთის ღვინის ტური</Link></li>
               <li><Link href="/#tours">სვანეთი / მესტია</Link></li>
-              <li><Link href="/#hotels">სასტუმროები</Link></li>
+              <li><Link href="/hotels">სასტუმროები</Link></li>
             </ul>
           </div>
 
@@ -51,10 +51,9 @@ export default function Footer() {
             <h4 className="footer-col-title">სერვისები</h4>
             <ul className="footer-links">
               <li><Link href="/#tours">ტურები</Link></li>
-              <li><Link href="/#hotels">სასტუმროები</Link></li>
+              <li><Link href="/hotels">სასტუმროები</Link></li>
               <li><Link href="/transfers">ტრანსპორტი / ტრანსფერი</Link></li>
               <li><Link href="/posts">სტატიები</Link></li>
-              <li><Link href="/#reviews">მიმოხილვები</Link></li>
               <li><Link href="/#booking">დაჯავშნა</Link></li>
             </ul>
           </div>
