@@ -7,71 +7,156 @@ import { useParams } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import DatePicker from "../../components/DatePicker";
-import { getTourById, getTourDetails, getTourSchedule, ALL_TOURS } from "../../lib/toursData";
+import { getTourDetails, getTourSchedule, ALL_TOURS } from "../../lib/toursData";
+import { getFirestoreTourById, normalizeFirestoreTour, groupDepartureDates } from "../../lib/toursFirestore";
 import { WA_LINK, WA_NUMBER, PHONE_DISPLAY, TELEGRAM_HANDLE, TELEGRAM_LINK, INSTAGRAM_HANDLE, INSTAGRAM_LINK, FAQS } from "../../lib/shared";
 
 export default function TourDetailPage() {
   const params = useParams();
   const tourId = params?.id || "promethe-martvili";
 
-  const rawTour = getTourById(tourId);
-  const tour = getTourDetails(rawTour);
-
-  // Free-dates schedule for this specific tour, grouped by month
-  const tourSchedule = getTourSchedule(rawTour?.id);
-
-  // Similar tours list (excluding current tour)
-  const similarTours = (ALL_TOURS || []).filter((t) => t.id !== rawTour?.id).slice(0, 3);
-
-  // Most popular tours (category='popular', excluding current tour)
-  const popularTours = (ALL_TOURS || []).filter((t) => t.category === "popular" && t.id !== rawTour?.id);
-
-  // Upcoming free dates for the GROUP tour in "MM.DD" format (DatePicker format),
-  // derived from the tour's schedule (same dates shown in the schedule section)
-  const groupDatesMMDD = tourSchedule.flatMap((mGroup) =>
-    mGroup.dates.map((d) => {
-      const [dd, mm] = String(d).split(".");
-      return `${mm}.${dd}`;
-    })
-  );
-  const hasGroupDates = groupDatesMMDD.length > 0;
-
-  // Form State
+  const [fsTour, setFsTour] = useState(null);
+  const [fsLoading, setFsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState("");
   const [bookingName, setBookingName] = useState("");
   const [bookingPhone, setBookingPhone] = useState("");
   const [bookingPeople, setBookingPeople] = useState("2");
   const [messengerPref, setMessengerPref] = useState("WhatsApp");
   const [bookingNotes, setBookingNotes] = useState("");
-  // Tour type: "group" (fixed schedule dates) or "private" (any date)
-  const [tourType, setTourType] = useState(hasGroupDates ? "group" : "private");
+  const [tourType, setTourType] = useState("group");
+  const [expandedStep, setExpandedStep] = useState(null);
+  const [hoveredStop, setHoveredStop] = useState(null);
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const [activeDetailTab, setActiveDetailTab] = useState("includes");
+  const [lightboxImgIndex, setLightboxImgIndex] = useState(null);
+  const [showMobileStickyBtn, setShowMobileStickyBtn] = useState(false);
+  const bookingSidebarRef = useRef(null);
 
-  // ---- Price calculation ----
+  useEffect(() => {
+    let cancelled = false;
+    setFsLoading(true);
+    (async () => {
+      try {
+        const raw = await getFirestoreTourById(tourId);
+        if (!cancelled) setFsTour(raw ? normalizeFirestoreTour(raw) : null);
+      } catch {
+        if (!cancelled) setFsTour(null);
+      } finally {
+        if (!cancelled) setFsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [tourId]);
+
+  const staticRaw = ALL_TOURS.find((t) => t.id === tourId) || null;
+  const isFirestoreTour = !!fsTour;
+  const rawTour = fsTour || staticRaw;
+
+  const tour = !rawTour
+    ? null
+    : isFirestoreTour
+      ? {
+          ...rawTour,
+          departure: rawTour.destinationLabel || rawTour.destination || "ბათუმი",
+          meetingPoint: "სასტუმროდან ან მითითებული მისამართიდან გაყვანა",
+          dressCode: "კომფორტული ტანსაცმელი და მოსახერხებელი ფეხსაცმელი",
+          includes: ["კომფორტული ტრანსპორტირება", "გამოცდილი მძღოლისა და გიდის მომსახურება"],
+          excludes: ["ლოკაციების შესასვლელი ბილეთები", "პირადი ხარჯები და კვება"],
+          payment: "გადახდა გამგზავრების დღეს (ნაღდი ანგარიშსწორებით)",
+        highlights: [rawTour.desc],
+        gallery: rawTour.gallery?.length ? rawTour.gallery : [rawTour.img].filter(Boolean),
+        itinerary: rawTour.itinerary?.length
+          ? rawTour.itinerary
+          : [{ title: "ლოკაცია", desc: rawTour.desc, img: rawTour.img }],
+        tourSectionLabel: rawTour.tourSectionLabel,
+          reviews: [
+            { name: "მარიამ ც.", date: "2026 წლის ივლისი", rating: 5, comment: "ძალიან კარგად ორგანიზებული ტური!" },
+          ],
+        }
+      : getTourDetails(rawTour);
+
+  const firestoreSchedule = isFirestoreTour
+    ? groupDepartureDates(rawTour.departureDates || []).map((m) => ({
+        monthName: m.monthName,
+        monthIndex: m.monthIndex,
+        dates: m.dates.map((d) => d.chip),
+        seatsByChip: Object.fromEntries(m.dates.map((d) => [d.chip, d.freeSeats])),
+      }))
+    : null;
+
+  const tourSchedule = rawTour
+    ? (firestoreSchedule || getTourSchedule(rawTour?.id))
+    : [];
+
+  const similarTours = (ALL_TOURS || []).filter((t) => t.id !== rawTour?.id).slice(0, 3);
+  const popularTours = (ALL_TOURS || []).filter((t) => t.category === "popular" && t.id !== rawTour?.id);
+
+  const groupDatesMMDD = tourSchedule.flatMap((mGroup) =>
+    mGroup.dates.map((d) => {
+      const [dd, mm] = String(d).split(".");
+      return `${mm}.${dd}`;
+    })
+  );
+  const hasGroupSupport = isFirestoreTour ? !!rawTour.hasGroup : true;
+  const hasPrivateSupport = isFirestoreTour ? !!rawTour.hasPrivate : true;
+  const hasGroupDates = hasGroupSupport && groupDatesMMDD.length > 0;
+
+  const seatsByChip = {};
+  if (firestoreSchedule) {
+    firestoreSchedule.forEach((m) => {
+      Object.assign(seatsByChip, m.seatsByChip || {});
+    });
+  }
+  const seatsByIso = {};
+  if (isFirestoreTour && Array.isArray(rawTour.departureDates)) {
+    rawTour.departureDates.forEach((e) => {
+      if (e?.date) seatsByIso[e.date] = Number(e.freeSeats) || 0;
+    });
+  }
+
+  useEffect(() => {
+    if (hasGroupDates) setTourType("group");
+    else if (hasPrivateSupport) setTourType("private");
+  }, [tourId, hasGroupDates, hasPrivateSupport]);
+
+  const freeSeatsForSelected =
+    tourType === "group" && selectedDate
+      ? seatsByIso[selectedDate] ?? (() => {
+          const [, mm, dd] = selectedDate.split("-");
+          return seatsByChip[`${dd}.${mm}`];
+        })()
+      : null;
+
+  const configuredPeopleMin = isFirestoreTour
+    ? Number(tourType === "private" ? rawTour?.privateGroupMin : rawTour?.groupMin) || 1
+    : 1;
+  const groupMaxCap = isFirestoreTour
+    ? Math.max(configuredPeopleMin, Number(tourType === "private" ? rawTour?.privateGroupMax : rawTour?.groupMax) || 50)
+    : 50;
+  const peopleMax =
+    tourType === "group" && freeSeatsForSelected != null
+      ? Math.max(configuredPeopleMin, Math.min(groupMaxCap, freeSeatsForSelected))
+      : groupMaxCap;
+  const peopleMin = configuredPeopleMin;
+
+  useEffect(() => {
+    const n = parseInt(bookingPeople, 10) || peopleMin;
+    if (n < peopleMin) setBookingPeople(String(peopleMin));
+    if (n > peopleMax) setBookingPeople(String(peopleMax));
+  }, [peopleMin, peopleMax, bookingPeople]);
+
   const parsePriceNumber = (str) => {
     const m = String(str || "").replace(/\s/g, "").match(/\d+/);
     return m ? parseInt(m[0], 10) : 0;
   };
-  const groupUnitPrice = parsePriceNumber(tour?.priceGroup);
-  const privateTotalPrice = parsePriceNumber(tour?.pricePrivate);
-  const peopleCount = Math.max(1, parseInt(bookingPeople, 10) || 1);
+  const groupUnitPrice = isFirestoreTour
+    ? (rawTour?.priceGroupNum || parsePriceNumber(tour?.priceGroup))
+    : parsePriceNumber(tour?.priceGroup);
+  const privateTotalPrice = isFirestoreTour
+    ? (rawTour?.pricePrivateNum || parsePriceNumber(tour?.pricePrivate))
+    : parsePriceNumber(tour?.pricePrivate);
+  const peopleCount = Math.max(peopleMin, parseInt(bookingPeople, 10) || peopleMin);
   const totalPrice = tourType === "group" ? groupUnitPrice * peopleCount : privateTotalPrice;
-  
-  // Active Itinerary Accordion / Hover Stop state
-  const [expandedStep, setExpandedStep] = useState(null);
-  const [hoveredStop, setHoveredStop] = useState(null);
-
-  // FAQ Accordion State
-  const [openFaqIndex, setOpenFaqIndex] = useState(0);
-
-  // VIP Details Tab State
-  const [activeDetailTab, setActiveDetailTab] = useState("includes");
-
-  // Lightbox State
-  const [lightboxImgIndex, setLightboxImgIndex] = useState(null);
-
-  // Mobile Sticky Booking Bar Observer State
-  const [showMobileStickyBtn, setShowMobileStickyBtn] = useState(false);
-  const bookingSidebarRef = useRef(null);
 
   // Auto-select nearest available date from today if not manually selected.
   // Only applies to GROUP tours — individual tours can pick any date.
@@ -189,9 +274,21 @@ export default function TourDetailPage() {
   };
 
   const pickScheduleDate = (chip) => {
+    if (isFirestoreTour && Array.isArray(rawTour.departureDates)) {
+      const match = rawTour.departureDates.find((e) => {
+        if (!e?.date) return false;
+        const [, mm, dd] = e.date.split("-");
+        return `${dd}.${mm}` === chip;
+      });
+      if (match) {
+        setTourType("group");
+        setSelectedDate(match.date);
+        scrollToBooking();
+        return;
+      }
+    }
     const iso = scheduleDateToIso(chip);
     if (!iso) return;
-    // Schedule chips are group-tour dates, so switch to group type
     setTourType("group");
     setSelectedDate(iso);
     scrollToBooking();
@@ -245,6 +342,31 @@ export default function TourDetailPage() {
     }
   };
 
+  if (fsLoading && !staticRaw) {
+    return (
+      <div className="tour-page-wrapper">
+        <Navbar active="tours" />
+        <div className="container" style={{ padding: "8rem 1.5rem", textAlign: "center" }}>
+          <p style={{ color: "var(--text-mute)" }}>იტვირთება...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!rawTour || !tour) {
+    return (
+      <div className="tour-page-wrapper">
+        <Navbar active="tours" />
+        <div className="container" style={{ padding: "8rem 1.5rem", textAlign: "center" }}>
+          <h1 style={{ marginBottom: "1rem" }}>ტური ვერ მოიძებნა</h1>
+          <Link href="/tours" style={{ color: "var(--blue)", fontWeight: 700 }}>← ტურების სია</Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="tour-page-wrapper">
       <Navbar active="tours" />
@@ -275,7 +397,9 @@ export default function TourDetailPage() {
           </div>
 
           <div className="container tdp-hero2-caption">
-            <span className="tdp-hero2-kicker">{tour.typeLabel || "ერთდღიანი"} ექსკურსია</span>
+            <span className="tdp-hero2-kicker">
+              {tour.tourSectionLabel || `${tour.typeLabel || "ერთდღიანი"} ექსკურსია`}
+            </span>
             <h1 className="tdp-hero2-title">{tour.title}</h1>
           </div>
         </div>
@@ -293,7 +417,11 @@ export default function TourDetailPage() {
               </div>
               <div className="tdp-hero2-fact">
                 <span className="fact-label">ჯგუფი</span>
-                <strong className="fact-value">1-18 კაცი</strong>
+                <strong className="fact-value">
+                  {isFirestoreTour
+                    ? `${configuredPeopleMin}-${groupMaxCap} კაცი`
+                    : "1-18 კაცი"}
+                </strong>
               </div>
               <div className="tdp-hero2-fact">
                 <span className="fact-label">ფასი</span>
@@ -376,9 +504,15 @@ export default function TourDetailPage() {
                           onMouseEnter={() => setHoveredStop(idx)}
                           onMouseLeave={() => setHoveredStop(null)}
                           onClick={() => {
+                            if (item.placeId) {
+                              window.location.href = "/places/" + item.placeId;
+                              return;
+                            }
                             const galIdx = tour.gallery?.indexOf(stopImg);
                             openLightbox(galIdx >= 0 ? galIdx : 0);
                           }}
+                          role={item.placeId ? "link" : undefined}
+                          tabIndex={item.placeId ? 0 : undefined}
                         >
                           {/* Circular Point Dot Button */}
                           <div className="tdp-zigzag-dot-btn">
@@ -400,6 +534,11 @@ export default function TourDetailPage() {
                                 <span className="popover-tag">📍 ლოკაცია #{idx + 1}</span>
                                 <h4>{item.title}</h4>
                                 <p>{item.desc}</p>
+                                {item.placeId && (
+                                  <Link href={"/places/" + item.placeId} className="tdp-place-detail-link" onClick={(e) => e.stopPropagation()}>
+                                    ადგილის დეტალები <span>→</span>
+                                  </Link>
+                                )}
 
                                 <div className="popover-photo-box">
                                   <Image
@@ -607,22 +746,24 @@ export default function TourDetailPage() {
                 
                 <div className="price-cards-stack">
                   {/* Group Tour Price */}
-                  <button
-                    type="button"
-                    className={`price-tier-card group${tourType === "group" ? " is-selected" : ""}${!hasGroupDates ? " is-unavailable" : ""}`}
-                    onClick={() => handleTourTypeChange("group")}
-                    disabled={!hasGroupDates}
-                    aria-pressed={tourType === "group"}
-                  >
-                    <div className="tier-info">
-                      <strong>ჯგუფური ტური</strong>
-                      <small>{hasGroupDates ? "ფიქსირებული განრიგი" : "ამჟამად არ არის დაგეგმილი"}</small>
-                    </div>
-                    <div className="tier-amount">{tour.priceGroup}</div>
-                  </button>
+                  {hasGroupSupport && tour.priceGroup && (
+                    <button
+                      type="button"
+                      className={`price-tier-card group${tourType === "group" ? " is-selected" : ""}${!hasGroupDates ? " is-unavailable" : ""}`}
+                      onClick={() => handleTourTypeChange("group")}
+                      disabled={!hasGroupDates}
+                      aria-pressed={tourType === "group"}
+                    >
+                      <div className="tier-info">
+                        <strong>ჯგუფური ტური</strong>
+                        <small>{hasGroupDates ? "ფიქსირებული განრიგი" : "ამჟამად არ არის დაგეგმილი"}</small>
+                      </div>
+                      <div className="tier-amount">{tour.priceGroup}</div>
+                    </button>
+                  )}
 
                   {/* Private Tour Price */}
-                  {tour.pricePrivate && (
+                  {hasPrivateSupport && tour.pricePrivate && (
                     <button
                       type="button"
                       className={`price-tier-card private${tourType === "private" ? " is-selected" : ""}`}
@@ -662,29 +803,33 @@ export default function TourDetailPage() {
                 <div className="tdp-form-group">
                   <label>ტურის ტიპი</label>
                   <div className="tdp-tour-type-switch" role="radiogroup" aria-label="ტურის ტიპის არჩევა">
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={tourType === "group"}
-                      className={`tdp-type-option${tourType === "group" ? " is-active" : ""}${!hasGroupDates ? " is-disabled" : ""}`}
-                      onClick={() => handleTourTypeChange("group")}
-                      disabled={!hasGroupDates}
-                    >
-                      <strong>ჯგუფური</strong>
-                      <small>{groupUnitPrice ? `₾${groupUnitPrice}/კაცი` : "—"}</small>
-                    </button>
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={tourType === "private"}
-                      className={`tdp-type-option${tourType === "private" ? " is-active" : ""}`}
-                      onClick={() => handleTourTypeChange("private")}
-                    >
-                      <strong>ინდივიდუალური</strong>
-                      <small>{privateTotalPrice ? `₾${privateTotalPrice} სულ` : "შეთანხმებით"}</small>
-                    </button>
+                    {hasGroupSupport && (
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={tourType === "group"}
+                        className={`tdp-type-option${tourType === "group" ? " is-active" : ""}${!hasGroupDates ? " is-disabled" : ""}`}
+                        onClick={() => handleTourTypeChange("group")}
+                        disabled={!hasGroupDates}
+                      >
+                        <strong>ჯგუფური</strong>
+                        <small>{groupUnitPrice ? `₾${groupUnitPrice}/კაცი` : "—"}</small>
+                      </button>
+                    )}
+                    {hasPrivateSupport && (
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={tourType === "private"}
+                        className={`tdp-type-option${tourType === "private" ? " is-active" : ""}`}
+                        onClick={() => handleTourTypeChange("private")}
+                      >
+                        <strong>ინდივიდუალური</strong>
+                        <small>{privateTotalPrice ? `₾${privateTotalPrice} სულ` : "შეთანხმებით"}</small>
+                      </button>
+                    )}
                   </div>
-                  {!hasGroupDates && (
+                  {hasGroupSupport && !hasGroupDates && (
                     <p className="tdp-no-group-note">
                       ამ ტურისთვის ჯგუფური ტური ამჟამად არ არის დაგეგმილი — შესაძლებელია მხოლოდ ინდივიდუალური ტურის დაჯავშნა.
                     </p>
@@ -709,13 +854,26 @@ export default function TourDetailPage() {
                   <label>მოგზაურთა რაოდენობა (კაცი)</label>
                   <input
                     type="number"
-                    min="1"
-                    max="50"
+                    min={peopleMin}
+                    max={peopleMax}
                     placeholder="მაგ: 2"
                     value={bookingPeople}
-                    onChange={(e) => setBookingPeople(e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const n = parseInt(v, 10);
+                      if (v !== "" && !isNaN(n) && n > peopleMax) {
+                        setBookingPeople(String(peopleMax));
+                      } else {
+                        setBookingPeople(v);
+                      }
+                    }}
                     required
                   />
+                  {tourType === "group" && freeSeatsForSelected != null && (
+                    <p className="tdp-type-hint">
+                      ამ თარიღზე თავისუფალია {freeSeatsForSelected} ადგილი — მაქსიმუმ {peopleMax} კაცი
+                    </p>
+                  )}
                 </div>
 
                 <div className="tdp-form-group">

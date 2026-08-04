@@ -169,6 +169,9 @@ export default function LoginPage() {
                 className="lp-avatar"
                 width={80}
                 height={80}
+                onError={(e) => {
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || "User")}&background=29b2b7&color=fff&size=80`;
+                }}
               />
               <div className="lp-username">{user.displayName || user.email?.split("@")[0]}</div>
               <div className="lp-useremail">{user.email}</div>

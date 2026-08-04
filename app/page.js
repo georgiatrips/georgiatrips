@@ -8,9 +8,20 @@ import { MAP_PATHS } from "./mapPaths";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import DatePicker from "./components/DatePicker";
-import { ALL_TOURS, ALL_TOURS_SCHEDULE } from "./lib/toursData";
+import { ALL_TOURS_SCHEDULE } from "./lib/toursData";
+import { useAllTours } from "./lib/useAllTours";
+import { groupDepartureDates } from "./lib/toursFirestore";
+import { listPlaces } from "./lib/placesFirestore";
+import { GEORGIA_REGIONS } from "./lib/placesMeta";
+import { listPosts } from "./lib/postsFirestore";
+import { listReviews } from "./lib/reviewsFirestore";
 
 const fetcher = (url) => fetch(url).then((r) => r.json());
+
+const truncateText = (value, maxLength = 100) => {
+  const text = String(value || "").trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength).trimEnd()}...` : text;
+};
 
 // ============================================================
 // CONFIG & STATIC DATA
@@ -351,38 +362,19 @@ const SECTIONS_DATA = [
   },
 ];
 
-const REVIEWS = [
-  [
-    {
-      text: "GeorgiaTrips-ის VIP ტურმა მოლოდინს გადააჭარბა. კერძო მძღოლი და ვერტმფრენის ტური უმაღლესი დონის ი��ო. ნამდვილი ფუფუნება საქართველოში!",
-      author: "ალი ალ-ფარაჯი",
-      from: "დუბაი, არაბთა გაერთიანებული საამიროები",
-      avatar: "A",
-    },
-    {
-      text: "საუკეთესო ოჯახური შვებულება! გიდი ძალიან მეგობრული იყო, ბავშვებისთვის საინტერესო აქტივობებით. ჰალალ კვების ორგანიზება იყო იდეა���ური.",
-      author: "ფატიმა ხალიდი",
-      from: "რიადი, საუდის არაბეთი",
-      avatar: "F",
-    },
-  ],
-  [
-    {
-      text: "ყაზბეგის მთები და გერგეთის სამება საოცარი იყო. GeorgiaTrips-მა დაგვიგეგმა ულამაზესი ტური. მადლობა 24/7 მხარდაჭერისთვის!",
-      author: "ომარ იასინი",
-      from: "ქუვეითი",
-      avatar: "O",
-    },
-    {
-      text: "საუკეთესო სერვისი და პროფესიონალიზმი. კახეთის ტურით და ქართული სტუმართმოყვარეობით აღფრთოვანებულები დავრჩით.",
-      author: "ლეილა მანსური",
-      from: "კატარი",
-      avatar: "L",
-    },
-  ],
-];
+// Map Firestore tourSection values → home page themed section ids
+const FIREBASE_SECTION_TO_HOME = {
+  "mountains-nature": "nature",
+  "batumi-city": "culture",
+  "wine": "taste",
+  "exotic-parks": "adventure",
+  "sea": "luxury",
+  "seasonal": "seasons",
+};
+
 
 const SOCIAL_POSTS = [
+
   {
     platform: "instagram",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
@@ -599,20 +591,98 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState(0);
 
   const [popTourSlide, setPopTourSlide] = useState(0);
-  const tourPairs = useMemo(() => {
-    const pairs = [];
-    for (let i = 0; i < ALL_TOURS.length; i += 2) {
-      pairs.push(ALL_TOURS.slice(i, i + 2));
-    }
-    return pairs;
+  const [places, setPlaces] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    listPlaces()
+      .then((items) => { if (active) setPlaces(items); })
+      .catch((error) => console.error("Failed to load places for homepage", error));
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
+    let active = true;
+    listPosts()
+      .then((items) => { if (active) setPosts(items.slice(0, 6)); })
+      .catch((error) => console.error("Failed to load posts for homepage", error));
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    listReviews()
+      .then((items) => { if (active) setReviews(items); })
+      .catch((error) => console.error("Failed to load reviews for homepage", error))
+      .finally(() => { if (active) setReviewsLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const popularPlaces = useMemo(() => places.filter((place) => place.isPopular).slice(0, 2), [places]);
+  const latestPlaces = useMemo(() => [...places].sort((a, b) => {
+    const aTime = a.createdAt?.toMillis?.() || (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+    const bTime = b.createdAt?.toMillis?.() || (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+    return bTime - aTime;
+  }).slice(0, 6), [places]);
+
+  // Static tours + Firestore tours added from Admin panel
+  const { allTours, firestoreTours } = useAllTours();
+
+  const popularTours = useMemo(() => firestoreTours.filter((tour) => tour.isPopular), [firestoreTours]);
+  const popularTourPairs = useMemo(() => {
+    const pairs = [];
+    for (let i = 0; i < popularTours.length; i += 2) {
+      pairs.push(popularTours.slice(i, i + 2));
+    }
+    return pairs;
+  }, [popularTours]);
+
+  // Merge Admin-added (Firestore) tours into the matching themed sections
+  const dynamicSections = useMemo(() => {
+    if (firestoreTours.length === 0) return SECTIONS_DATA;
+    return SECTIONS_DATA.map((sec) => {
+      if (sec.id === "popular") return sec;
+      const dynamicTours = firestoreTours.filter(
+        (t) => FIREBASE_SECTION_TO_HOME[t.category] === sec.id
+      );
+      if (dynamicTours.length === 0) return sec;
+      return { ...sec, tours: [...sec.tours, ...dynamicTours] };
+    });
+  }, [firestoreTours]);
+
+  // Add group tours created in the admin panel to the public schedule.
+  // Their departure dates are stored as ISO dates in Firestore, so convert
+  // them to the same month/date shape as the curated schedule entries.
+  const scheduleTours = useMemo(() => {
+    const firestoreScheduleTours = firestoreTours
+      .filter((tour) => tour.hasGroup && tour.departureDates?.length > 0)
+      .map((tour) => ({
+        id: tour.id,
+        title: tour.title,
+        priceGroup: tour.priceGroup || tour.pricePrivate || "",
+        priceNote: tour.hasPrivate ? "ინდივიდუალური ტურის ვარიანტიც ხელმისაწვდომია" : "",
+        locationShort: tour.destinationLabel || tour.destination || "",
+        desc: tour.desc,
+        months: groupDepartureDates(tour.departureDates).map((month) => ({
+          ...month,
+          dates: month.dates.map((date) => date.chip),
+        })),
+      }))
+      .filter((tour) => tour.months.length > 0);
+
+    return [...ALL_TOURS_SCHEDULE, ...firestoreScheduleTours];
+  }, [firestoreTours]);
+
+  useEffect(() => {
+    if (popularTourPairs.length < 2) return undefined;
     const popTourInterval = setInterval(() => {
-      setPopTourSlide((prev) => (prev + 1) % tourPairs.length);
+      setPopTourSlide((prev) => (prev + 1) % popularTourPairs.length);
     }, 3500);
     return () => clearInterval(popTourInterval);
-  }, [tourPairs.length]);
+  }, [popularTourPairs.length]);
 
   const router = useRouter();
   const [heroDestination, setHeroDestination] = useState("all");
@@ -621,11 +691,15 @@ export default function Home() {
 
   const allAvailableDates = useMemo(() => {
     const datesSet = new Set();
-    ALL_TOURS.forEach((t) => {
+    allTours.forEach((t) => {
       if (t.dates) t.dates.forEach((d) => datesSet.add(d));
+      if (t.departureDates) t.departureDates.forEach((entry) => {
+        const iso = typeof entry === "string" ? entry : entry?.date;
+        if (iso) datesSet.add(iso);
+      });
     });
     return Array.from(datesSet);
-  }, []);
+  }, [allTours]);
 
   const handleHeroSearch = (e) => {
     if (e) e.preventDefault();
@@ -662,11 +736,6 @@ export default function Home() {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Review Slider Auto Play
-    const interval = setInterval(() => {
-      setActiveReviewSlide((prev) => (prev + 1) % REVIEWS.length);
-    }, 5000);
-
     // Hero Background Slider Auto Play (10s)
     const heroInterval = setInterval(() => {
       setCurrentHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
@@ -674,16 +743,17 @@ export default function Home() {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      clearInterval(interval);
       clearInterval(heroInterval);
     };
   }, []);
 
+
   // Scroll-reveal animation for all sections
   useEffect(() => {
     const targets = document.querySelectorAll(
-      ".section-header, .categories-grid, .why-wrap, .booking-wrap, .weather-wrap, .map-wrap, .reviews-slider, .social-feed-grid, .stats-grid, .faq-list, .batumi-section-header, .intl-header"
+      ".section-header, .categories-grid, .why-wrap, .booking-wrap, .weather-wrap, .map-wrap, .reviews-slider, .social-feed-grid, .stats-grid, .faq-list, .batumi-section-header, .intl-header, .google-reviews-header"
     );
+
     targets.forEach((el) => el.classList.add("reveal"));
 
     const observer = new IntersectionObserver(
@@ -691,6 +761,7 @@ export default function Home() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("in-view");
+
             observer.unobserve(entry.target);
           }
         });
@@ -707,7 +778,7 @@ export default function Home() {
   };
 
   const handleTourClick = (tour) => {
-    const id = tour.id || ALL_TOURS.find((t) => t.title === tour.title)?.id || "promethe-martvili";
+    const id = tour.id || allTours.find((t) => t.title === tour.title)?.id || "promethe-martvili";
     router.push(`/tours/${id}`);
   };
 
@@ -782,12 +853,9 @@ export default function Home() {
                   onChange={(e) => setHeroDestination(e.target.value)}
                 >
                   <option value="all">ყველა რეგიონი</option>
-                  <option value="batumi">ბათუმი</option>
-                  <option value="kazbegi">ყაზბეგი</option>
-                  <option value="tbilisi">თბილისი</option>
-                  <option value="kakheti">კახეთი</option>
-                  <option value="svaneti">სვანეთი</option>
-                  <option value="gudauri">გუდაური</option>
+                  {GEORGIA_REGIONS.map((region) => (
+                    <option key={region} value={region}>{region}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -977,7 +1045,7 @@ export default function Home() {
 
       {/* ==================== THEMED TOUR SECTIONS ==================== */}
       <div className="themed-sections-container">
-        {SECTIONS_DATA.map((sec) =>
+        {dynamicSections.map((sec) =>
           sec.id === "popular" ? (
             <section key={sec.id} className="popular-destinations-section" id={sec.id}>
               <div className="popular-destinations-inner">
@@ -991,49 +1059,23 @@ export default function Home() {
                   {/* Left Column: Asymmetrical/Staggered Cards */}
                   <div className="pop-cards-col">
                     <div className="pop-cards-wrapper">
-                      <div className="pop-card" onClick={() => handleBookNow("პრომეთეს მღვიმე", "₾100-დან")}>
-                        <div className="pop-card-img-wrap">
-                          <Image
-                            src="https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80"
-                            alt="პრომეთეს მღვიმე"
-                            fill
-                            sizes="(max-width: 768px) 100vw, 30vw"
-                            style={{ objectFit: 'cover' }}
-                            loading="lazy"
-                          />
-                          <div className="pop-card-badge">TOP 1 პოპულარული</div>
-                          <div className="pop-card-gradient"></div>
-                          <div className="pop-card-footer-info">
-                            <h4 className="pop-card-title">პრომეთეს მღვიმე</h4>
-                            <span className="pop-card-sub">წყალტუბო • 14 საათი</span>
+                      {popularPlaces.map((place, index) => (
+                        <a key={place.id} href={"/places/" + place.id} className={"pop-card" + (index === 1 ? " pop-card-staggered" : "")}>
+                          <div className="pop-card-img-wrap">
+                            <Image src={place.img} alt={place.title} fill sizes="(max-width: 768px) 100vw, 30vw" style={{ objectFit: "cover" }} loading="lazy" />
+                            <div className="pop-card-badge">TOP {index + 1} პოპულარული</div>
+                            <div className="pop-card-gradient"></div>
+                            <div className="pop-card-footer-info">
+                              <h4 className="pop-card-title">{place.title}</h4>
+                              <span className="pop-card-sub">{place.region || "საქართველო"}</span>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="pop-card pop-card-staggered" onClick={() => handleBookNow("მარტვილის კანიონი", "₾100-დან")}>
-                        <div className="pop-card-img-wrap">
-                          <Image
-                            src="https://images.unsplash.com/photo-1501854140801-50d01698950b?w=800&q=80"
-                            alt="მარტვილის კანიონი"
-                            fill
-                            sizes="(max-width: 768px) 100vw, 30vw"
-                            style={{ objectFit: 'cover' }}
-                            loading="lazy"
-                          />
-                          <div className="pop-card-badge">TOP 2 პოპულარული</div>
-                          <div className="pop-card-gradient"></div>
-                          <div className="pop-card-footer-info">
-                            <h4 className="pop-card-title">მარტვილის კანიონი</h4>
-                            <span className="pop-card-sub">სამეგრელო • ნავით გასეირნება</span>
-                          </div>
-                        </div>
-                      </div>
+                        </a>
+                      ))}
                     </div>
 
                     <div className="pop-dots">
                       <span className="pop-dot active"></span>
-                      <span className="pop-dot"></span>
-                      <span className="pop-dot"></span>
                     </div>
                   </div>
 
@@ -1044,33 +1086,15 @@ export default function Home() {
                     </p>
 
                     <div className="pop-attractions-grid">
-                      <div className="pop-attraction-item" onClick={() => handleBookNow("პრომეთეს მღვიმე", "₾100-დან")}>
-                        <span className="pop-pin">📍</span>
-                        <span className="pop-name">პრომეთეს მღვიმე</span>
-                      </div>
-                      <div className="pop-attraction-item" onClick={() => handleBookNow("მახუნცეთის ჩანჩქერი", "₾80-დან")}>
-                        <span className="pop-pin">📍</span>
-                        <span className="pop-name">მახუნცეთის ჩანჩქერი</span>
-                      </div>
-                      <div className="pop-attraction-item" onClick={() => handleBookNow("მარტვილის კანიონი", "₾100-დან")}>
-                        <span className="pop-pin">📍</span>
-                        <span className="pop-name">მარტვილის კანიონი</span>
-                      </div>
-                      <div className="pop-attraction-item" onClick={() => handleBookNow("გვარას ციხე", "₾80-დან")}>
-                        <span className="pop-pin">📍</span>
-                        <span className="pop-name">გვარას ციხე</span>
-                      </div>
-                      <div className="pop-attraction-item" onClick={() => handleBookNow("ბათუმის ბოტანიკური ბაღი", "₾70-დან")}>
-                        <span className="pop-pin">📍</span>
-                        <span className="pop-name">ბოტანიკური ბაღი</span>
-                      </div>
-                      <div className="pop-attraction-item" onClick={() => handleBookNow("მირვეთის ჩანჩქერი", "₾80-დან")}>
-                        <span className="pop-pin">📍</span>
-                        <span className="pop-name">მირვეთის ჩანჩქერი</span>
-                      </div>
+                      {latestPlaces.map((place) => (
+                        <a key={place.id} href={"/places/" + place.id} className="pop-attraction-item">
+                          <span className="pop-name">{place.title}</span>
+                          <span className="pop-pin" aria-hidden="true">📍</span>
+                        </a>
+                      ))}
                     </div>
 
-                    <a href="#booking" onClick={() => handleBookNow("ყველა ლოკაცია (კონსულტაცია)", "უფასო")} className="pop-all-btn">
+                    <a href="/places" className="pop-all-btn">
                       ყველა ლოკაცია <span>→</span>
                     </a>
                   </div>
@@ -1085,7 +1109,7 @@ export default function Home() {
                     </div>
 
                     <div className="pop-tour-slider-dots">
-                      {tourPairs.map((_, idx) => (
+                      {popularTourPairs.map((_, idx) => (
                         <button
                           key={idx}
                           className={`pop-tour-dot ${idx === popTourSlide ? "active" : ""}`}
@@ -1101,7 +1125,7 @@ export default function Home() {
                       className="mini-cards-slider-track"
                       style={{ transform: `translateX(-${popTourSlide * 100}%)` }}
                     >
-                      {tourPairs.map((pair, pIdx) => (
+                      {popularTourPairs.map((pair, pIdx) => (
                         <div key={pIdx} className="mini-cards-pair-slide">
                           {pair.map((tour) => (
                             <article
@@ -1144,14 +1168,18 @@ export default function Home() {
                                 <p className="pop-fc-desc">{tour.desc}</p>
                                 <div className="pop-fc-footer">
                                   <div className="pop-fc-prices">
-                                    <div className="pop-fc-price-item">
-                                      <small>ჯგუფში</small>
-                                      <strong>{tour.priceGroup}</strong>
-                                    </div>
-                                    <div className="pop-fc-price-item">
-                                      <small>ინდივ.</small>
-                                      <strong>{tour.pricePrivate}</strong>
-                                    </div>
+                                    {tour.priceGroup && (
+                                      <div className="pop-fc-price-item">
+                                        <small>ჯგუფში</small>
+                                        <strong>{tour.priceGroup}</strong>
+                                      </div>
+                                    )}
+                                    {tour.pricePrivate && (
+                                      <div className="pop-fc-price-item">
+                                        <small>ინდივ.</small>
+                                        <strong>{tour.pricePrivate}</strong>
+                                      </div>
+                                    )}
                                   </div>
                                   <button className="pop-fc-btn">დაჯავშნა →</button>
                                 </div>
@@ -1189,19 +1217,25 @@ export default function Home() {
                       />
                       <span className="tb-badge">{tour.badge}</span>
                       <div className="tb-overlay-right">
-                        <div className="tb-price-tag tb-price-priv">
-                          <small>ინდივიდუალური</small>
-                          <strong>{tour.pricePrivate}</strong>
-                        </div>
-                        <div className="tb-price-tag tb-price-group">
-                          <small>ჯგუფში</small>
-                          <strong>{tour.priceGroup}</strong>
-                        </div>
-                        <div className="tb-dates-row">
-                          {tour.dates?.map((d, i) => (
-                            <span key={i} className="tb-date-chip">{d}</span>
-                          ))}
-                        </div>
+                        {tour.pricePrivate && (
+                          <div className="tb-price-tag tb-price-priv">
+                            <small>ინდივიდუალური</small>
+                            <strong>{tour.pricePrivate}</strong>
+                          </div>
+                        )}
+                        {tour.priceGroup && (
+                          <div className="tb-price-tag tb-price-group">
+                            <small>ჯგუფში</small>
+                            <strong>{tour.priceGroup}</strong>
+                          </div>
+                        )}
+                        {tour.dates && tour.dates.length > 0 && (
+                          <div className="tb-dates-row">
+                            {tour.dates.slice(0, 4).map((d, i) => (
+                              <span key={i} className="tb-date-chip">{d}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -1233,15 +1267,15 @@ export default function Home() {
           </div>
 
           <div className="schedule-list-container">
-            {ALL_TOURS_SCHEDULE.map((item) => (
+            {scheduleTours.map((item) => (
               <article key={item.id} className="schedule-card-row">
-                <h3 className="schedule-tour-title" onClick={() => handleBookNow(item.title, item.priceGroup)}>
+                <h3 className="schedule-tour-title" onClick={() => handleTourClick(item)}>
                   {item.title}
                 </h3>
                 <div className="schedule-tour-price">
                   <strong>{item.priceGroup}</strong>, <span>{item.priceNote}</span>
                 </div>
-                <p className="schedule-tour-desc">{item.locationShort}. {item.desc}</p>
+                <p className="schedule-tour-desc">{truncateText([item.locationShort, item.desc].filter(Boolean).join(". "))}</p>
 
                 <div className="schedule-months-flex">
                   {item.months.map((mGroup, mIdx) => (
@@ -1317,7 +1351,7 @@ export default function Home() {
       </section>
 
 
-      {/* ==================== GALLERY SECTION (SOCIAL MEDIA FEED) ==================== */}
+      {/* ==================== GALLERY SECTION (FIREBASE POSTS) ==================== */}
       <section className="section gallery-bg" id="gallery">
         <div className="section-inner">
           <div className="section-header">
@@ -1327,102 +1361,231 @@ export default function Home() {
             <div className="gold-line"></div>
           </div>
 
-          <div className={`social-feed-grid ${showAllSocial ? "show-all" : ""}`}>
-            {SOCIAL_POSTS.map((post, idx) => (
-              <article key={idx} className={`social-post-card social-${post.platform}`}>
-                {/* Post Header */}
-                <div className="sp-header">
-                  <div className="sp-avatar-wrap">
-                    <img src={post.avatar} alt={post.username} className="sp-avatar" />
-                  </div>
-                  <div className="sp-user-info">
-                    <div className="sp-username-row">
-                      <span className="sp-username">{post.username}</span>
-                      {post.platform !== "instagram" && <span className="sp-verified">✓</span>}
+          {posts.length > 0 ? (
+            <div className="posts-home-grid">
+              {posts.map((post) => (
+                <article key={post.id} className="facebook-post-card">
+                  <div className="fb-post-header">
+                    <div className="fb-author-wrap">
+                      <div className="fb-avatar">
+                        {post.avatar ? <img src={post.avatar} alt="" className="posts-author-avatar" /> : <BrandLogo width={40} height={40} />}
+                      </div>
+                      <div className="fb-author-info">
+                        <div className="fb-name-row">
+                          <strong className="fb-author-name">{post.author}</strong>
+                          {post.verified && <span className="fb-verified-badge" title="დამოწმებული ოფიციალური გვერდი">✓</span>}
+                        </div>
+                        <div className="fb-meta-row">
+                          <span className="fb-time">{post.timeTag}</span>
+                          <span className="fb-dot">•</span>
+                          <span className="fb-public-icon" title="საჯარო პოსტი">🌐</span>
+                          <span className="fb-dot">•</span>
+                          <span className="fb-location-tag">{post.location}</span>
+                        </div>
+                      </div>
                     </div>
-                    <span className="sp-meta-sub">
-                      {post.handle ? post.handle : post.location}
-                    </span>
                   </div>
-                  <div className="sp-platform-badge">
-                    <BrandLogo width={26} height={26} />
-                  </div>
-                </div>
 
-                {/* Post Content */}
-                <div className="sp-content">
-                  <p className="sp-text">{post.text}</p>
-                  <div className="sp-img-wrap" onClick={() => setLightboxImage({ src: post.img, title: post.username })}>
-                    <Image
-                      src={post.img}
-                      alt={post.username}
-                      width={400}
-                      height={300}
-                      style={{ objectFit: "cover" }}
-                      className="sp-image"
-                    />
+                  <div className="fb-post-body">
+                    <p className="fb-post-text">{post.content && post.content.length > 100 ? post.content.slice(0, 100) + "..." : post.content}</p>
+                    {post.hashtags && <p className="fb-post-hashtags">{post.hashtags}</p>}
+                    {post.feeling && <span className="post-feeling-badge">{post.feeling}</span>}
                   </div>
-                </div>
 
-                {/* Post Footer */}
-                <div className="sp-footer">
-                  <div className="sp-actions">
-                    {/* Like */}
-                    <button className="sp-action-btn sp-like-btn">
+                  {post.img && (
+                    <div className="fb-post-media">
+                      <img src={post.img} alt={post.title} className="fb-media-img" />
+                    </div>
+                  )}
+
+                  <div className="fb-reactions-bar">
+                    <div className="fb-reactions-icons">
+                      <svg className="fb-like-summary-icon" width="18" height="18" viewBox="0 0 24 24" fill="#29b2b7" stroke="#29b2b7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                      </svg>
+                      <span className="fb-reactions-count">{post.initialLikes}</span>
+                    </div>
+                    <div className="fb-counts-group">
+                      <span className="fb-count-item">{(post.comments || []).length} კომენტარი</span>
+                      <span className="fb-dot">•</span>
+                      <span className="fb-count-item">{post.sharesCount} გაზიარება</span>
+                    </div>
+                  </div>
+
+                  <div className="fb-action-btns">
+                    <a href="/posts" className="fb-action-btn">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
                       </svg>
-                      <span>{post.likes}</span>
-                    </button>
-                    {/* Comment */}
-                    <button className="sp-action-btn sp-comment-btn">
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      <span>მოწონება</span>
+                    </a>
+                    <a href="/posts" className="fb-action-btn">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                       </svg>
-                      <span>{post.comments || post.replies || "12"}</span>
-                    </button>
-                    {/* Share */}
-                    <button className="sp-action-btn sp-share-btn">
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      <span>კომენტარი</span>
+                    </a>
+                    <a href="/posts" className="fb-action-btn">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="18" cy="5" r="3"/>
+                        <circle cx="6" cy="12" r="3"/>
+                        <circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                       </svg>
                       <span>გაზიარება</span>
-                    </button>
+                    </a>
                   </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="posts-empty-state" style={{ margin: "0 auto" }}>
+              <h2>სტატიები მალე დაემატება</h2>
+              <p>თვალი ადევნეთ ჩვენს ახალ მოგზაურობის ისტორიებს.</p>
+            </div>
+          )}
 
           <div className="social-feed-more-wrap">
-            <button
-              className="social-feed-more-btn"
-              onClick={() => setShowAllSocial(!showAllSocial)}
-            >
-              {showAllSocial ? "მეტის დამალვა" : "მეტის ჩვენება"}
-              <svg
-                className={showAllSocial ? "rotate-180" : ""}
-                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-              >
+            <a href="/posts" className="social-feed-more-btn" style={{ textDecoration: "none" }}>
+              ყველას ნახვა
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 9l6 6 6-6" />
               </svg>
-            </button>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Lightbox Modal */}
-      {lightboxImage && (
-        <div className="lightbox" onClick={() => setLightboxImage(null)}>
-          <button className="lightbox-close" onClick={() => setLightboxImage(null)}>✕</button>
-          <img src={lightboxImage.src} alt={lightboxImage.title} className="lightbox-img" />
+
+      {/* ==================== GOOGLE MAPS REVIEWS SECTION ==================== */}
+      <section className="google-reviews-section" id="google-reviews">
+        <div className="google-reviews-container">
+          <div className="google-reviews-header">
+            <span className="section-eyebrow">ჩვენი სტუმრები ამბობენ</span>
+            <h2 className="section-title">მიმოხილვები</h2>
+            <p className="section-desc">ნახე, რას ამბობენ ჩვენი სტუმრები ახლო აღმოსავლეთიდან</p>
+            <div className="gold-line"></div>
+          </div>
+
+          {reviewsLoading ? (
+            <div className="google-reviews-grid">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="google-review-card" style={{ opacity: 0.6 }}>
+                  <div className="review-rating">
+                    <div className="review-stars">
+                      {[...Array(5)].map((_, j) => (
+                        <span key={j} className="star filled">★</span>
+                      ))}
+                    </div>
+                    <span className="review-stars-text">5.0</span>
+                  </div>
+                  <p className="review-text">იტვირთება...</p>
+                  <div className="review-author-row">
+                    <div className="review-author-avatar" style={{ background: "#e0e0e0" }}></div>
+                    <div className="review-author-info">
+                      <strong className="review-author-name">...</strong>
+                      <span className="review-author-time">...</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : reviews.length > 0 ? (
+            <div className="google-reviews-horizontal">
+              <button
+                className="reviews-h-arrow reviews-h-arrow-left"
+                onClick={() => setActiveReviewSlide((prev) => Math.max(0, prev - 1))}
+                aria-label="წინა მიმოხილვა"
+                disabled={activeReviewSlide === 0}
+              >
+                ‹
+              </button>
+              <div className="google-reviews-h-viewport">
+                <div className="google-reviews-h-track" style={{ transform: `translateX(-${activeReviewSlide * 100}%)` }}>
+                  {reviews.map((review) => (
+                    <div key={review.id} className="google-review-card google-review-card-single">
+                      <div className="review-rating">
+                        <div className="review-stars">
+                          {[...Array(5)].map((_, i) => (
+                            <span
+                              key={i}
+                              className={`star ${i < review.rating ? "filled" : "outline"}`}
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                        <span className="review-stars-text">{review.rating}.0</span>
+                      </div>
+
+                      <p className="review-text">
+                        {review.text.length > 180
+                          ? review.text.slice(0, 180) + "..."
+                          : review.text}
+                      </p>
+
+                      <div className="review-author-row">
+                        {review.avatar ? (
+                          <img
+                            src={review.avatar}
+                            alt={review.name}
+                            className="review-author-avatar"
+                            onError={(e) => {
+                              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.name)}&background=29b2b7&color=fff&font-size=0.5`;
+                            }}
+                          />
+                        ) : (
+                          <div className="review-author-avatar" style={{ background: "#29b2b7", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600 }}>
+                            {review.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="review-author-info">
+                          <strong className="review-author-name">{review.name}</strong>
+                          <span className="review-author-time">{review.time}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button
+                className="reviews-h-arrow reviews-h-arrow-right"
+                onClick={() => setActiveReviewSlide((prev) => Math.min(reviews.length - 1, prev + 1))}
+                aria-label="შემდეგი მიმოხილვა"
+                disabled={activeReviewSlide === reviews.length - 1}
+              >
+                ›
+              </button>
+            </div>
+          ) : (
+            <div className="google-reviews-grid">
+              <div className="google-review-card" style={{ gridColumn: "1 / -1", textAlign: "center", padding: "3rem" }}>
+                <p className="review-text">მიმოხილვები ჯერ არ არის დამატებული.</p>
+              </div>
+            </div>
+          )}
+
+          <div className="google-reviews-cta">
+            <a
+              href="https://www.google.com/maps/place/GeorgiaTrips/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="google-cta-btn"
+            >
+              <svg className="google-icon" viewBox="0 0 24 24">
+                <path d="M12 0.5C8.13 0.5 4.88 2.75 3.16 6.54L2 10h10V0.5C11.12 0.5 10.59 0.5 12 0.5zM12 23.5c3.87 0 7.12-2.25 8.84-5.96L22 14h-10v10C12 23.5 12 23.5 12 23.5zM12 10.5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6s-6-2.69-6-6-2.69-6-6-6-6 2.69-6 6z" />
+              </svg>
+              ყველა მიმოხილვები Google Maps-ზე
+            </a>
+          </div>
         </div>
-      )}
+      </section>
 
 
       {/* ==================== GEORGIA MAP SECTION ==================== */}
       <section className="section map-section" id="map">
+
         <div className="section-inner">
           <div className="section-header">
             <span className="section-eyebrow">ინტერაქტიური რუკა</span>
@@ -1528,40 +1691,49 @@ export default function Home() {
             <p className="section-desc">ნახე, რას ამბობენ ჩვენი სტუმრები ახლო აღმოსავლეთიდან</p>
             <div className="gold-line"></div>
           </div>
-          <div className="reviews-slider">
-            <div className="reviews-track" style={{ transform: `translateX(-${activeReviewSlide * 100}%)` }}>
-              {REVIEWS.map((slide, sIdx) => (
-                <div key={sIdx} className="review-slide">
-                  {slide.map((r, rIdx) => (
-                    <div key={rIdx} className="review-card">
-                      <div className="review-stars">★★★★★</div>
-                      <p className="review-text">“{r.text}”</p>
-                      <div className="review-author">
-                        <div className="review-avatar">{r.avatar}</div>
-                        <div className="review-author-info">
-                          <strong>{r.author}</strong>
-                          <span>{r.from}</span>
+          {reviews.length > 0 ? (
+            <>
+              <div className="reviews-horizontal">
+                <button
+                  className="reviews-h-arrow reviews-h-arrow-left"
+                  onClick={() => setActiveReviewSlide((prev) => Math.max(0, prev - 1))}
+                  aria-label="წინა მიმოხილვა"
+                  disabled={activeReviewSlide === 0}
+                >
+                  ‹
+                </button>
+                <div className="reviews-h-viewport">
+                  <div className="reviews-h-track" style={{ transform: `translateX(-${activeReviewSlide * 360}px)` }}>
+                    {reviews.map((r) => (
+                      <div key={r.id} className="review-card review-card-horizontal">
+                        <div className="review-stars">★★★★★</div>
+                        <p className="review-text">“{r.text}”</p>
+                        <div className="review-author">
+                          <div className="review-avatar">{r.name.charAt(0).toUpperCase()}</div>
+                          <div className="review-author-info">
+                            <strong>{r.name}</strong>
+                            <span>{r.time}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="reviews-controls">
-            <button className="slider-btn" onClick={() => setActiveReviewSlide((prev) => (prev - 1 + REVIEWS.length) % REVIEWS.length)}>‹</button>
-            <div className="slider-dots">
-              {REVIEWS.map((_, i) => (
                 <button
-                  key={i}
-                  className={`slider-dot ${i === activeReviewSlide ? "active" : ""}`}
-                  onClick={() => setActiveReviewSlide(i)}
-                ></button>
-              ))}
-            </div>
-            <button className="slider-btn" onClick={() => setActiveReviewSlide((prev) => (prev + 1) % REVIEWS.length)}>›</button>
-          </div>
+                  className="reviews-h-arrow reviews-h-arrow-right"
+                  onClick={() => setActiveReviewSlide((prev) => Math.min(reviews.length - 1, prev + 1))}
+                  aria-label="შემდეგი მიმოხილვა"
+                  disabled={activeReviewSlide === reviews.length - 1}
+                >
+                  ›
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="review-text" style={{ textAlign: "center", padding: "2rem" }}>
+              მიმოხილვები ჯერ არ არის დამატებული.
+            </p>
+          )}
         </div>
       </section>
 

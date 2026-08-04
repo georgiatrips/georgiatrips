@@ -120,7 +120,8 @@ export default function DatePicker({
     if (!availableDates || availableDates.length === 0) return true;
     const mm = String(dayObj.month + 1).padStart(2, "0");
     const dd = String(dayObj.day).padStart(2, "0");
-    return availableDates.includes(`${mm}.${dd}`);
+    const iso = `${dayObj.year}-${mm}-${dd}`;
+    return availableDates.includes(iso) || availableDates.includes(`${mm}.${dd}`);
   };
 
   const isDisabled = (dayObj) => !isAvailable(dayObj) || isPast(dayObj);

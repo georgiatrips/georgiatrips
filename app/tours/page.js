@@ -7,7 +7,8 @@ import { useSearchParams } from "next/navigation";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import DatePicker from "../components/DatePicker";
-import { ALL_TOURS, DESTINATIONS } from "../lib/toursData";
+import { DESTINATIONS } from "../lib/toursData";
+import { useAllTours } from "../lib/useAllTours";
 import { WA_LINK } from "../lib/shared";
 
 function ToursPageContent() {
@@ -19,14 +20,30 @@ function ToursPageContent() {
   const [selectedFormat, setSelectedFormat] = useState("all"); // "all" | "individual" | "group"
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [showMobileFilterTrigger, setShowMobileFilterTrigger] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    const handleScroll = () => setShowMobileFilterTrigger(window.scrollY > 260);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Static tours + Firestore tours added from Admin panel
+  const { allTours } = useAllTours();
 
   const allAvailableDates = useMemo(() => {
     const datesSet = new Set();
-    ALL_TOURS.forEach((t) => {
+    allTours.forEach((t) => {
       if (t.dates) t.dates.forEach((d) => datesSet.add(d));
+      if (t.departureDates) t.departureDates.forEach((entry) => {
+        const iso = typeof entry === "string" ? entry : entry?.date;
+        if (iso) datesSet.add(iso);
+      });
     });
     return Array.from(datesSet);
-  }, []);
+  }, [allTours]);
 
   // Sync state with URL Search Params on mount or when URL changes
   useEffect(() => {
@@ -41,7 +58,7 @@ function ToursPageContent() {
 
   // Filtering Logic
   const filteredTours = useMemo(() => {
-    return ALL_TOURS.filter((tour) => {
+    return allTours.filter((tour) => {
       // 1. Destination filter
       if (selectedDestination !== "all" && tour.destination !== selectedDestination) {
         return false;
@@ -53,10 +70,10 @@ function ToursPageContent() {
       }
 
       // 3. Tour Format filter (individual / group)
-      if (selectedFormat === "individual" && !tour.pricePrivate) {
+      if (selectedFormat === "individual" && !(tour.hasPrivate ?? Boolean(tour.pricePrivate))) {
         return false;
       }
-      if (selectedFormat === "group" && !tour.priceGroup) {
+      if (selectedFormat === "group" && !(tour.hasGroup ?? Boolean(tour.priceGroup))) {
         return false;
       }
 
@@ -65,7 +82,12 @@ function ToursPageContent() {
         const parts = selectedDate.split("-");
         if (parts.length === 3) {
           const mmdd = `${parts[1]}.${parts[2]}`;
-          if (!tour.dates || !tour.dates.includes(mmdd)) {
+          const hasExactDepartureDate = tour.departureDates?.some((entry) => {
+            const iso = typeof entry === "string" ? entry : entry?.date;
+            return iso === selectedDate;
+          });
+          const hasMatchingLegacyDate = tour.dates?.includes(mmdd);
+          if (!hasExactDepartureDate && !hasMatchingLegacyDate) {
             return false;
           }
         }
@@ -82,7 +104,12 @@ function ToursPageContent() {
 
       return true;
     });
-  }, [selectedDestination, selectedType, selectedFormat, selectedDate, searchQuery]);
+  }, [selectedDestination, selectedType, selectedFormat, selectedDate, searchQuery, allTours]);
+
+  useEffect(() => { setCurrentPage(1); }, [selectedDestination, selectedType, selectedFormat, selectedDate, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTours.length / 12));
+  const visibleTours = filteredTours.slice((currentPage - 1) * 12, currentPage * 12);
 
   const resetFilters = () => {
     setSelectedDestination("all");
@@ -129,7 +156,7 @@ function ToursPageContent() {
         <div className="tours-catalog-inner">
 
           {/* Mobile Filter Trigger Button */}
-          <div className="mobile-filter-bar-wrap">
+          {showMobileFilterTrigger && <div className="mobile-filter-bar-wrap">
             <button
               className="mobile-filter-trigger-btn"
               onClick={() => setMobileFilterOpen(true)}
@@ -140,7 +167,7 @@ function ToursPageContent() {
               <span>ფილტრების გახსნა</span>
               {hasActiveFilters && <span className="mobile-filter-dot" />}
             </button>
-          </div>
+          </div>}
 
           {/* Backdrop Overlay for Mobile Drawer */}
           {mobileFilterOpen && (
@@ -148,7 +175,7 @@ function ToursPageContent() {
           )}
 
           {/* Filter Bar Panel */}
-          <aside className={`tours-filter-panel ${mobileFilterOpen ? "mobile-open" : ""}`}>
+          <aside className={"tours-filter-panel " + (mobileFilterOpen ? "mobile-open " : "") + (showMobileFilterTrigger ? "mobile-scrolled" : "")}>
             <div className="filter-panel-header">
               <h3>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -188,7 +215,7 @@ function ToursPageContent() {
 
               {/* 1. Destination Filter */}
               <div className="filter-group">
-                <label htmlFor="filter-destination">მიმართულება</label>
+                <label htmlFor="filter-destination">რეგიონი</label>
                 <div className="filter-select-wrap">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
@@ -291,57 +318,39 @@ function ToursPageContent() {
                       <button onClick={() => setSelectedFormat("all")}>✕</button>
                     </span>
                   )}
+
                 </div>
               ) : null}
             </div>
 
             {filteredTours.length > 0 ? (
+              <>
               <div className="tours-grid-catalog">
-                {filteredTours.map((tour) => (
-                  <article key={tour.id} className="tb-card tours-page-card">
-                    <Link href={`/tours/${tour.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                      <div className="tb-card-img-wrap">
-                        <Image
-                          src={tour.img}
-                          alt={tour.title}
-                          fill
-                          className="tb-card-img"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                        <span className="tb-badge">{tour.badge}</span>
-                        <div className="tb-overlay-right">
-                          <div className="tb-price-tag tb-price-priv">
-                            <small>ინდივიდუალური</small>
-                            <strong>{tour.pricePrivate}</strong>
-                          </div>
-                          <div className="tb-price-tag tb-price-group">
-                            <small>ჯგუფში</small>
-                            <strong>{tour.priceGroup}</strong>
-                          </div>
-                        </div>
+                {visibleTours.map((tour) => (
+                  <Link key={tour.id} href={`/tours/${tour.id}`} className="tb-card" style={{ textDecoration: "none" }}>
+                    <div className="tb-card-img-wrap">
+                      <Image src={tour.img} alt={tour.title} className="tb-card-img" fill style={{ objectFit: "cover" }} loading="lazy" />
+                      <span className="tb-badge">{tour.badge || tour.destinationLabel || tour.destination || "საქართველო"}</span>
+                      <div className="tb-overlay-right">
+                        {tour.pricePrivate && <div className="tb-price-tag tb-price-priv"><small>ინდივიდუალური</small><strong>{tour.pricePrivate}</strong></div>}
+                        {tour.priceGroup && <div className="tb-price-tag tb-price-group"><small>ჯგუფში</small><strong>{tour.priceGroup}</strong></div>}
+                        {tour.dates?.length > 0 && <div className="tb-dates-row">{tour.dates.slice(0, 4).map((date, index) => <span key={index} className="tb-date-chip">{date}</span>)}</div>}
                       </div>
-
-                      <div className="tb-card-body">
-                        <div className="tours-card-type-badge">
-                          <span>{tour.typeLabel}</span> • <span>{tour.duration}</span>
-                        </div>
-                        <h3 className="tb-card-title">{tour.title}</h3>
-                        <p className="tb-card-annotation">{tour.desc}</p>
-                        <div className="tb-card-line"></div>
-
-                        <div className="tours-card-bottom">
-                          <div className="tb-card-facilities">
-                            <span className="tb-facility-item">{tour.location}</span>
-                          </div>
-                          <span className="btn-book-tour-card">
-                            დეტალურად →
-                          </span>
-                        </div>
+                    </div>
+                    <div className="tb-card-body">
+                      <h3 className="tb-card-title">{tour.title}</h3>
+                      <p className="tb-card-annotation">{tour.desc}</p>
+                      <div className="tb-card-line" />
+                      <div className="tb-card-facilities">
+                        <span className="tb-facility-item">⏱ {tour.duration}</span>
+                        <span className="tb-facility-item">{tour.location || "📍 ბათუმიდან"}</span>
                       </div>
-                    </Link>
-                  </article>
+                    </div>
+                  </Link>
                 ))}
               </div>
+              <div className="catalog-pagination" aria-label="ტურების გვერდები">{Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => <button key={number} type="button" className={currentPage === number ? "is-active" : ""} onClick={() => setCurrentPage(number)}>{number}</button>)}</div>
+              </>
             ) : (
               <div className="tours-empty-state">
                 <div className="empty-icon">🏔️</div>

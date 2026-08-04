@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "google-oauth": "node scripts/google-oauth.js"
   },
   "dependencies": {
     "firebase": "^12.17.0",

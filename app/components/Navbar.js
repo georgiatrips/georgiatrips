@@ -7,7 +7,7 @@ import { BrandLogo } from "../lib/shared";
 import { useAuth } from "../lib/AuthContext";
 
 // Shared site navigation. `active` highlights the current top-level item.
-// Supported active values: "home" | "tours" | "transport" | "posts" | "about" | "contact"
+// Supported active values: "home" | "tours" | "transport" | "posts" | "hotels" | "admin" | "about" | "contact"
 export default function Navbar({ active = "home" }) {
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,7 +42,7 @@ export default function Navbar({ active = "home" }) {
   const [hasHero, setHasHero] = useState(false);
 
   useEffect(() => {
-    setHasHero(!!document.querySelector(".hero, .tours-page-hero, .transfers-hero, .posts-hero, .tdp-hero2"));
+    setHasHero(!!document.querySelector(".hero, .tours-page-hero, .transfers-hero, .posts-hero, .tdp-hero2, .hotels-hero, .admin-hero"));
     const handleScroll = () => setNavScrolled(window.scrollY > 50);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -66,8 +66,11 @@ export default function Navbar({ active = "home" }) {
       <ul className="nav-links">
         <li><Link href="/">მთავარი</Link></li>
         <li><Link href="/tours" className={active === "tours" ? "active" : ""}>ტურები</Link></li>
+        <li><Link href="/places" className={active === "places" ? "active" : ""}>ადგილები</Link></li>
+        <li><Link href="/hotels" className={active === "hotels" ? "active" : ""}>სასტუმროები</Link></li>
         <li><Link href="/transfers" className={active === "transfers" || active === "transport" ? "active" : ""}>ტრანსპორტი</Link></li>
         <li><Link href="/posts" className={active === "posts" || active === "articles" ? "active" : ""}>სტატიები</Link></li>
+        <li><Link href="/admin" className={active === "admin" ? "active" : ""}>ადმინ პანელი</Link></li>
       </ul>
 
       {/* Right Side Controls */}
@@ -124,7 +127,28 @@ export default function Navbar({ active = "home" }) {
             onMouseLeave={() => scheduleClose("user", setUserDropdownOpen)}
           >
             <button className="nav-login-btn nav-user-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <img
+                src={user?.photoURL || ""}
+                alt=""
+                className="nav-user-avatar"
+                style={{ display: user?.photoURL ? "inline-block" : "none" }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const icon = e.currentTarget.nextElementSibling;
+                  if (icon) icon.style.display = "inline-flex";
+                }}
+              />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ display: user?.photoURL ? "none" : "inline-flex" }}
+              >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>
               <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</span>
@@ -173,8 +197,11 @@ export default function Navbar({ active = "home" }) {
       <div className={`nav-mobile ${mobileMenuOpen ? "open" : ""}`}>
         <Link href="/" onClick={() => setMobileMenuOpen(false)}>მთავარი</Link>
         <Link href="/tours" onClick={() => setMobileMenuOpen(false)}>ტურები</Link>
+        <Link href="/places" onClick={() => setMobileMenuOpen(false)}>ადგილები</Link>
+        <Link href="/hotels" onClick={() => setMobileMenuOpen(false)}>სასტუმროები</Link>
         <Link href="/transfers" onClick={() => setMobileMenuOpen(false)}>ტრანსპორტი</Link>
         <Link href="/posts" onClick={() => setMobileMenuOpen(false)}>სტატიები</Link>
+        <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>ადმინ პანელი</Link>
         <div className="nav-mobile-controls">
           <div className="nav-mobile-ctrl-row">
             <span>ენა:</span>

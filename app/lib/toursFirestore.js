@@ -5,6 +5,7 @@ import {
   getDoc,
   getDocs,
   deleteDoc,
+  updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -86,6 +87,12 @@ export async function listFirestoreTours() {
     });
 }
 
+export async function updateFirestoreTour(id, tourData) {
+  await updateDoc(doc(db, TOURS_COLLECTION, id), {
+    ...tourData,
+    updatedAt: serverTimestamp(),
+  });
+}
 export async function deleteFirestoreTour(id) {
   await deleteDoc(doc(db, TOURS_COLLECTION, id));
 }
@@ -141,6 +148,7 @@ export function normalizeFirestoreTour(tour) {
     asLocalizedText(tour.tourSectionLabel) || getTourSectionLabel(tourSection);
 
   const itinerary = (Array.isArray(tour.itinerary) ? tour.itinerary : []).map((item) => ({
+    placeId: typeof item?.placeId === "string" ? item.placeId : "",
     title: asLocalizedText(item?.title),
     desc: asLocalizedText(item?.desc),
     img: typeof item?.img === "string" ? item.img : asLocalizedText(item?.img),
@@ -167,9 +175,12 @@ export function normalizeFirestoreTour(tour) {
     pricePrivateNum: hasPrivate ? Number(tour.pricePrivate) || 0 : 0,
     groupMin: Number(tour.groupMin) || 1,
     groupMax: Number(tour.groupMax) || 18,
+    privateGroupMin: Number(tour.privateGroupMin) || Number(tour.groupMin) || 1,
+    privateGroupMax: Number(tour.privateGroupMax) || Number(tour.groupMax) || 18,
     hasGroup,
     hasPrivate,
     isVip: !!tour.isVip,
+    isPopular: !!tour.isPopular,
     badge: badgeRaw || "ახალი ტური",
     tourSection,
     tourSectionLabel,
