@@ -241,7 +241,7 @@ const SECTIONS_DATA = [
         priceGroup: "₾350/კაცი",
         pricePrivate: "₾950",
         dates: ["07.28", "08.01", "08.05"],
-        title: "მესტიის & უშგულის საიდუმლო",
+        title: "��ესტიის & უშგულის საიდუმლო",
         desc: "სვანური კოშკები, უშგულის ავთენტური სოფელი და საუკუნოვანი კულტურა.",
         duration: "24+ საათი",
         location: "📍 ზუგდიდი, მესტია",
@@ -595,6 +595,7 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsMeta, setReviewsMeta] = useState({ rating: null, totalReviews: null, googleMapsUri: "" });
 
   useEffect(() => {
     let active = true;
@@ -622,6 +623,13 @@ export default function Home() {
         const googleReviews = payload?.data?.reviews || [];
         if (payload?.error) {
           console.warn("[v0] Google reviews unavailable:", payload.message, payload.diagnostics);
+        }
+        if (active) {
+          setReviewsMeta({
+            rating: payload?.data?.rating ?? null,
+            totalReviews: payload?.data?.totalReviews ?? null,
+            googleMapsUri: payload?.data?.googleMapsUri || "",
+          });
         }
         return googleReviews.map((review, index) => ({
           id: review.googleReviewId || `google-${index}`,
@@ -1616,7 +1624,7 @@ export default function Home() {
 
           <div className="google-reviews-cta">
             <a
-              href="https://www.google.com/maps/place/GeorgiaTrips/"
+              href={reviewsMeta.googleMapsUri || "https://www.google.com/maps/search/?api=1&query=GeorgiaTrips"}
               target="_blank"
               rel="noopener noreferrer"
               className="google-cta-btn"
