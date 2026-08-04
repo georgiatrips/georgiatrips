@@ -17164,7 +17164,7 @@ body>.dp-popover,
 .google-reviews-cta .google-cta-btn .google-icon {
   width: 18px;
   height: 18px;
-  fill: #1a73e8;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

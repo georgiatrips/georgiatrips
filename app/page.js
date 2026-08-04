@@ -310,7 +310,7 @@ const SECTIONS_DATA = [
     tours: [
       {
         img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
-        badge: "5★ VIP ექსკლუზივი",
+        badge: "5★ VIP ექსკლ���ზივი",
         priceGroup: "₾800/კაცი",
         pricePrivate: "₾2200",
         dates: ["07.27", "07.29", "08.02"],
@@ -471,7 +471,7 @@ const WEATHER_DATA = {
     forecast: [
       { day: "ხვალ", temp: "25°C", condition: "rain" },
       { day: "ზეგ", temp: "27°C", condition: "sun" },
-      { day: "შემდეგ", temp: "28°C", condition: "sun" }
+      { day: "შემდეგ", temp: "28��C", condition: "sun" }
     ],
     icon: "cloud-sun"
   },
@@ -614,10 +614,58 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
-    listReviews()
-      .then((items) => { if (active) setReviews(items); })
-      .catch((error) => console.error("Failed to load reviews for homepage", error))
+
+    const loadGoogleReviews = async () => {
+      try {
+        const res = await fetch("/api/google-reviews");
+        const payload = await res.json();
+        const googleReviews = payload?.data?.reviews || [];
+        if (payload?.error) {
+          console.warn("[v0] Google reviews unavailable:", payload.message, payload.diagnostics);
+        }
+        return googleReviews.map((review, index) => ({
+          id: review.googleReviewId || `google-${index}`,
+          name: review.name,
+          rating: Number(review.rating) || 5,
+          text: review.text || "",
+          time: review.time || review.relativeTime || "",
+          avatar: review.avatar || "",
+          source: "google",
+          googleReviewId: review.googleReviewId || "",
+          reviewDate: review.originalTimestamp
+            ? new Date(review.originalTimestamp * 1000).toISOString()
+            : new Date(0).toISOString(),
+        }));
+      } catch (error) {
+        console.error("Failed to load Google reviews for homepage", error);
+        return [];
+      }
+    };
+
+    const loadFirestoreReviews = async () => {
+      try {
+        return await listReviews();
+      } catch (error) {
+        console.error("Failed to load reviews for homepage", error);
+        return [];
+      }
+    };
+
+    Promise.all([loadGoogleReviews(), loadFirestoreReviews()])
+      .then(([googleReviews, savedReviews]) => {
+        if (!active) return;
+        // Google-იდან წაკითხულს ვანიჭებთ პრიორიტეტს, დანარჩენს ვამატებთ (დუბლიკატების გარეშე)
+        const seen = new Set(googleReviews.map((review) => review.googleReviewId).filter(Boolean));
+        const extras = savedReviews.filter(
+          (review) => !review.googleReviewId || !seen.has(review.googleReviewId)
+        );
+        const merged = [...googleReviews, ...extras].sort(
+          (a, b) => new Date(b.reviewDate || 0).getTime() - new Date(a.reviewDate || 0).getTime()
+        );
+        setReviews(merged);
+      })
       .finally(() => { if (active) setReviewsLoading(false); });
+
     return () => { active = false; };
   }, []);
 
@@ -826,7 +874,7 @@ export default function Home() {
           </h1>
 
           <div className="hero-locations">
-            <span className="hero-loc-tag">ყაზბეგი</span>
+            <span className="hero-loc-tag">ყ���ზბეგი</span>
             <span className="hero-loc-divider"></span>
             <span className="hero-loc-tag">თბილისი</span>
             <span className="hero-loc-divider"></span>
@@ -968,7 +1016,7 @@ export default function Home() {
             </p>
             <p className="about-desc">
               ჩვენი გამოცდილი გიდები, კომფორტული ტრანსპორტი და ყოველი მომსახურება
-              შერჩეულია ისე, რომ სამოგზაურო გეგმის ყველა დეტალი მოქნილი, უსაფრთხო
+              შერჩეულია ისე, რომ სამოგზაურო გეგმის ყველა დეტალი მოქნილი, უსა��რთხო
               და სასიამოვნო იყოს — დაწყებული ტრანსფერიდან, დამთავრებული ექსკლუზიური
               VIP პაკეტებამდე.
             </p>
@@ -1573,8 +1621,11 @@ export default function Home() {
               rel="noopener noreferrer"
               className="google-cta-btn"
             >
-              <svg className="google-icon" viewBox="0 0 24 24">
-                <path d="M12 0.5C8.13 0.5 4.88 2.75 3.16 6.54L2 10h10V0.5C11.12 0.5 10.59 0.5 12 0.5zM12 23.5c3.87 0 7.12-2.25 8.84-5.96L22 14h-10v10C12 23.5 12 23.5 12 23.5zM12 10.5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6s-6-2.69-6-6-2.69-6-6-6-6 2.69-6 6z" />
+              <svg className="google-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.54 5.54 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24z" />
+                <path fill="#FBBC05" d="M5.27 14.29a7.2 7.2 0 0 1 0-4.58V6.62H1.29a11.99 11.99 0 0 0 0 10.76l3.98-3.09z" />
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.7 0 3.99 2.47 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z" />
               </svg>
               ყველა მიმოხილვები Google Maps-ზე
             </a>
